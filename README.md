@@ -1,4 +1,4 @@
-<h1 align="center">BlackJack In Kotlin 🃏</h1>
+<h1 align="center">Blackjack In Kotlin 🃏</h1>
 
 <p align="center">
   <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/theakarui/blackjack-in-kotlin?style=flat-square">
