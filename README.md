@@ -23,13 +23,13 @@ This project, developed in Kotlin, aims to implement the classic card game "Blac
 - Gabriel Soares: [@Gaaaybe](https://github.com/Gaaaybe)
 - João Costa: [@TheAkarui](https://github.com/TheAkarui)
 
-## Discipline ♦️
+## Discipline ♣️
 
 - **Professor:** Janderson Jason Barbosa Aguiar
 - **Course:** Computer Science
 - **Period:** 2023.2
 
-## Game Specifications ♣️
+## Game Specifications ♦️
 
 ### Game Type: Twenty-One (Blackjack)
 
