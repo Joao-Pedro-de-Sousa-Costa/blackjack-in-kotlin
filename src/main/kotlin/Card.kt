@@ -1,13 +1,13 @@
-class Card{
-    private var nome: String? = null
-    private var naipe: String? = null
-    private var valor: Int = 0
+import src.main.kotlin.Rank
+import src.main.kotlin.Suit
 
-    fun getValor(): Int {
-        return valor
+class Card(private val suit: Suit, private val rank: Rank) {
+    fun getValue() = rank.rankValue
+    fun getSuit() = suit
+    fun getRank() = rank
+
+     override fun toString(): String {
+        return "[$rank of $suit] (${getValue()})"
     }
 
-    fun getSuit(): String {
-        return
-    }
 }
