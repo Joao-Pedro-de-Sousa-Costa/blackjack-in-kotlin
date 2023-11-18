@@ -1,0 +1,2 @@
+// O player terá dinheiro como atributo, onde pode ser incrementado ou não dependendo se ganhou ou não o jogo.
+// Dealer herdará as jogadas da classe player, fazendo com que ele possa comprar cartas ou não, essas coisas.

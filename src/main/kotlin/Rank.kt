@@ -1,8 +1,7 @@
 package src.main.kotlin
 
 enum class Rank(val rankName: String, val rankValue: Int) {
-
-    ACE("Ace", 11), //ou 1
+    ACE("Ace", 11),
     TWO("Two", 2),
     THREE("Three", 3),
     FOUR("Four", 4),
@@ -20,6 +19,7 @@ enum class Rank(val rankName: String, val rankValue: Int) {
         return rankName
     }
 
-
-
+    companion object {
+        val values = enumValues<Rank>()
+    }
 }
