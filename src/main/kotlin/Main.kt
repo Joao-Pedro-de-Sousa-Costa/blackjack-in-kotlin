@@ -1,29 +1,19 @@
-import src.main.kotlin.Hand
-import src.main.kotlin.Card
 
+import src.main.kotlin.Card
+import src.main.kotlin.Player
 fun main(args: Array<String>) {
     val deck = Card.createDeck()
-    val playerHand = Hand() // Inicializa a mão do jogador, deve ir pra player
-
 
     print("Deck criado: ")
     for (card in deck) {
         print("$card ")
     }
 
-    // Simulando jogador por que ainda não foi feito, retirar depois e adaptar
+    val newPlayer = Player(100)
 
-    val dealtCard = playerHand.dealCard(deck)
+    newPlayer.setName("Anniely")
+    newPlayer.placeBet(10)
+    newPlayer.hit(deck);
+    newPlayer.doubleDown(deck);
 
-    if (dealtCard != null) {
-        println("\nCarta recebida: $dealtCard")
-        println("Nova mão: $playerHand")
-    } else {
-        println("\nSem cartas no baralho.")
-    }
-
-    print("Deck atual: ")
-    for (card in deck) {
-        print("$card ")
-    }
 }
