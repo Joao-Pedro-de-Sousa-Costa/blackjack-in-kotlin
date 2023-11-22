@@ -23,8 +23,9 @@ This project, developed in Kotlin, aims to implement the classic card game "Blac
 - Gabriel Soares: [@Gaaaybe](https://github.com/Gaaaybe)
 - João Costa: [@TheAkarui](https://github.com/TheAkarui)
 
-## Discipline ♣️
+## Subject ♣️
 
+- **Subject name:** Paradigms
 - **Professor:** Janderson Jason Barbosa Aguiar
 - **Course:** Computer Science
 - **Period:** 2023.2
