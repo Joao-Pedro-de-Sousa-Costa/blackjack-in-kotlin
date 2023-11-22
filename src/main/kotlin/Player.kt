@@ -1,7 +1,9 @@
 package src.main.kotlin
+
+import java.lang.Exception
 import java.util.*
 
-class Player(private var money: Int) {
+class Player(private var finger: Int = 10) {
     private val hand = Hand()
     private var playerName: String = ""
     private var gameDateTime: Date? = null
@@ -15,8 +17,8 @@ class Player(private var money: Int) {
         return playerName
     }
 
-    fun getMoney(): Int {
-        return money
+    fun getBet(): Int {
+        return bet
     }
 
     fun getHand(): Hand {
@@ -32,17 +34,17 @@ class Player(private var money: Int) {
     }
 
     fun placeBet(betAmount: Int): Boolean { // Verificar se pode apostar
-        if (betAmount > 0 && betAmount <= money) {
-            money -= betAmount
+        if (betAmount > 0 && betAmount <= finger) {
+            finger -= betAmount
             bet = betAmount // Atualiza a aposta
             return true
         }
         return false
     }
 
-    fun receiveWinnings(winnings: Int) {
-        money += winnings
-    }
+    //fun receiveWinnings(winnings: Int) {
+    //    money += winnings
+    //}
 
     // Jogadas:
 
@@ -65,11 +67,11 @@ class Player(private var money: Int) {
         println("O jogador ${getName()} deseja dobrar a aposta.")
         val originalBet = bet
 
-        if (hand.getScore() <= 21 && money >= originalBet * 2) {
+        if (hand.getScore() <= 21 && finger >= originalBet * 2) {
             val newCard = hand.dealCard(deck)
             println("${getName()} recebeu uma carta: $newCard")
 
-            money -= originalBet
+            finger -= originalBet
             bet += originalBet
 
             return bet
@@ -86,12 +88,58 @@ class Player(private var money: Int) {
         println("O jogador ${getName()} decidiu não pegar mais cartas")
     }
 
-    // fun split(){} - Não sei implementar isso não
-    fun surrender() {
-        println("O jogador ${getName()} decidiu desistir da aposta.")
-    }
+    fun makeDecision(deck: MutableList<Card>) {
+        val input = Scanner(System.`in`)
+        var decision: String = ""
+        var getNum = true
 
-    override fun toString(): String {
-        return "Player: $playerName, Money: $money, $hand"
-    }
+        while (getNum) {
+            try {
+                println("Qual a sua opção?")
+                decision = input.next().lowercase()
+                getNum = false
+            } catch (e: Exception) {
+                println("Invalido")
+                input.next()
+            }
+        }
+
+        if (decision.equals("hit")) {
+            this.hit(deck)
+
+            if (this.hand.getScore() > 20) {
+                return
+            } else {
+                this.makeDecision(deck)
+            }
+
+
+        }
+
+        else if (decision.equals("double")){
+            this.doubleDown(deck)
+
+            if(this.hand.getScore() > 20) {
+                return
+            } else{
+                makeDecision(deck)
+            }
+
+        }
+        else{
+            this.stand()
+        }
+
+
+}
+
+
+// fun split(){} - Não sei implementar isso não
+//fun surrender() {
+//    println("O jogador ${getName()} decidiu desistir da aposta.")
+//}
+
+override fun toString(): String {
+    return "Player: $playerName, Money: $finger, $hand"
+}
 }
