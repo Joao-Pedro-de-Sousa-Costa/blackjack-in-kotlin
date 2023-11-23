@@ -36,6 +36,10 @@ class Hand {
         return score
     }
 
+    fun getCard(idx: Int): Card {
+        return cards.get(idx)
+    }
+
     override fun toString(): String {
         return "Hand: $cards, Score: ${getScore()}"
     }

@@ -78,7 +78,7 @@ class Player(private var finger: Int = 10) {
         } else if (hand.getScore() >= 21) {
             println("${getName()} atingiu ou ultrapassou 21. Não é possível receber mais cartas.")
         } else {
-            println("${getName()} não tem o valor suficiente para dobrar a aposta.")
+            println("${getName()} não tem dedos o suficiente para dobrar a aposta.")
         }
 
         return originalBet
