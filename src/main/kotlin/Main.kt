@@ -1,8 +1,9 @@
 
 import src.main.kotlin.Card
+import src.main.kotlin.Game
 import src.main.kotlin.Player
 fun main(args: Array<String>) {
-    val deck = Card.createDeck()
+/*    val deck = Card.createDeck()
 
     print("Deck criado: ")
     for (card in deck) {
@@ -15,5 +16,8 @@ fun main(args: Array<String>) {
     newPlayer.placeBet(10)
     newPlayer.hit(deck);
     newPlayer.doubleDown(deck);
+
+ */
+    val newGame = Game()
 
 }

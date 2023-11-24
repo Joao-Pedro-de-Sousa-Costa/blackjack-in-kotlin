@@ -42,7 +42,6 @@ class Dealer(private var name: String = "Dealer", private var finger: Int = 10) 
         if (hand.getScore() <= 21) {
             val newCard = hand.dealCard(deck)
             println("O jogador ${getName()} solicitou uma carta.")
-
             if (newCard != null) {
                 println("${getName()} recebeu uma carta: $newCard")
             } else {
@@ -120,17 +119,10 @@ class Dealer(private var name: String = "Dealer", private var finger: Int = 10) 
 
     }
 
-
-// fun split(){} - Não sei implementar isso não
-//fun surrender() {
-//    println("O jogador ${getName()} decidiu desistir da aposta.")
-//}
-
     override fun toString(): String {
-        return "Player: $playerName, Money: $finger, $hand"
+        return "Dealer , Money: $finger, $hand"
     }
 }
 
 
 
-}
