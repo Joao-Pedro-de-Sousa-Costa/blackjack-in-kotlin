@@ -9,7 +9,15 @@ open class Player(private var money: Int = 100) {
     private var playerName: String = ""
     private var gameDateTime: Date? = null
     private var bet: Int = 0
+    private var wins: Int = 0
     private var standing: Boolean = false
+
+    fun getMoney(): Int{
+        return money
+    }
+    fun setMoney(Pmoney: Int){
+        money = Pmoney
+    }
 
     fun setName(name: String) {
         playerName = name
@@ -57,11 +65,13 @@ open class Player(private var money: Int = 100) {
 
             if (newCard != null) {
                 println("${getName()} recebeu uma carta: $newCard")
+                println(this)
             } else {
                 println("O baralho acabou. Não é mais possível receber cartas.")
             }
         } else {
             println("${getName()} atingiu ou ultrapassou 21. Não é possível receber mais cartas.")
+            standing = true
         }
     }
 
@@ -79,8 +89,9 @@ open class Player(private var money: Int = 100) {
             return bet
         } else if (hand.getScore() >= 21) {
             println("${getName()} atingiu ou ultrapassou 21. Não é possível receber mais cartas.")
+            standing = true
         } else {
-            println("${getName()} não tem dedos o suficiente para dobrar a aposta.")
+            println("${getName()} não tem dinheiro o suficiente para dobrar a aposta.")
         }
 
         return originalBet
@@ -101,6 +112,7 @@ open class Player(private var money: Int = 100) {
         while (getNum) {
             try {
                 println("Qual a sua opção?")
+                println(" --HIT-- \n --DOUBLE-- \n --STAND--")
                 decision = input.next().lowercase()
                 getNum = false
             } catch (e: Exception) {
@@ -135,6 +147,6 @@ open class Player(private var money: Int = 100) {
     }
 
     override fun toString(): String {
-        return "Player: $playerName, Money: $money, $hand"
+        return "Player: $playerName, Bet: $bet, Money: $money, $hand"
     }
 }
