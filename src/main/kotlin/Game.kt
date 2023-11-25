@@ -1,12 +1,12 @@
 package src.main.kotlin
-
 import java.util.Scanner
 
 class Game {
     private var player1 = Player()
-    private var machine = CPUPlayer()
+    //private var machine = CPUPlayer()
     private var deck = Card.createDeck()
     private var machines = mutableListOf<CPUPlayer>()
+    private val results = mutableListOf<Player>()
 
     val scanner = Scanner(System.`in`)
 
@@ -14,27 +14,26 @@ class Game {
 
     init {
 
-        //println("Qual o seu nome? ")
-        //player1.setName(scanner.next())
-        //match()
-        //println(player1)
-        //player1.setMoney(2)
-        //println(player1)
-        //resetGame()
-        //println(player1)
-
+        println("Qual o seu nome? ")
+        player1.setName(scanner.next())
+        menu()
 
     }
 
     private fun resetGame() {
         player1.setMoney(Player().getMoney())
-        machine = CPUPlayer()
+        player1.setHand(Hand())
+        //machine = CPUPlayer()
         machines = mutableListOf()
         deck = Card.createDeck()
+
     }
-    
-    private fun resetMatch(){
-        
+
+    private fun resetMatch() {
+        player1.setHand(Hand())
+        for (machine in machines) {
+            machine.setHand(Hand())
+        }
     }
 
     fun menu() {
@@ -46,13 +45,12 @@ class Game {
         var numberOfOpponents: Int = scanner.nextInt()
 
         if (numberOfOpponents in setOf(1, 2, 3)) {
-
             for (i in 1..numberOfOpponents) {
-
-
-                machine.setName("Oponente$i")
-                machines.add(machine)
+                val newMachine = CPUPlayer()  // Crie uma nova instância aqui
+                newMachine.setName("Oponente$i")
+                machines.add(newMachine)
             }
+
         } else if (numberOfOpponents == 4) {
             return
         } else {
@@ -67,7 +65,7 @@ class Game {
         val choice = scanner.nextInt()
 
         if (choice == 1) {
-            //    modeNormalGame()
+            modeNormalGame()
 
         } else if (choice == 2) {
             //modeDoublegame()
@@ -84,17 +82,44 @@ class Game {
 
 
     private fun modeNormalGame() {
+
+        println(machines)
+
+
+
         var choice = "s"
-        while (choice.equals("s") || deck.size >= (1 + machines.size) * 2) {
+        println("Gerando arquivo do jogo...")//Fazer os resultados
+
+        while (choice == "s" && deck.size >= (1 + machines.size) * 2) {
             println("Iniando Partida...")
             match()
+            quantMatchs++
             print("Deseja continuar jogando?(S/N)")
+            choice = scanner.next().lowercase()
+            if(choice == "s") resetMatch()
         }
+
+
+        val sortedResults = results.sortedByDescending { it.getMoney() }
+
+        // Exibir o pódio
+        println("Podium:")
+        for ((index, player) in sortedResults.withIndex()) {
+            val playerName = player.getName()
+            val money = player.getMoney()
+            println("${index + 1}. $playerName - Dinheiro: $money")
+        }
+
 
 
     }
 
     private fun match() {
+
+        for (player in listOf(player1) + machines) {
+            results.add(player)
+        }
+
         var quantPlayers = 1 + machines.size
         if (deck.size >= quantPlayers * 2) {
 
@@ -102,11 +127,16 @@ class Game {
             val scanner = Scanner(System.`in`)
             println("Quanto voce quer apostar?")
             player1.placeBet(scanner.nextInt())
-            var generalBet = (listOf(player1) + machines).sumOf { it.getBet() }
+
 
             machines.forEach { machine ->
+                println("Antes: $machine")
                 machine.placeBet(player1.getBet())
+                println("Depois: $machine")
             }
+
+            var generalBet = (listOf(player1) + machines).sumOf { it.getBet() }
+            println(generalBet)
 
             for (player in listOf(player1) + machines) {
                 player.getHand().dealCard(deck)
@@ -118,15 +148,17 @@ class Game {
                 println("Turno do jogador ${player.getName()}")
 
                 if (player.getHand().getScore() == 21) {
-                    println("A partida acabou(MATCH), o vencedor é o $player, ele recebeu +$generalBet dinheiros")
-                    player.setMoney(player.getMoney() + generalBet)
+                    println("A partida acabou(MATCH), o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
+                    player.setMoney((player.getMoney() + generalBet))
+                    println(player)
                     return
                 }
                 player.makeDecision(deck)
 
                 if (player.getHand().getScore() == 21) {
-                    println("A partida(MATCH) acabou, o vencedor é o $player, ele recebeu +$generalBet dinheiros")
-                    player.setMoney(player.getMoney() + generalBet)
+                    println("A partida(MATCH) acabou, o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
+                    player.setMoney((player.getMoney() + generalBet))
+                    println(player)
 
                     return
 
@@ -135,8 +167,16 @@ class Game {
 
             val winner = findWinner(listOf(player1) + machines)
             if (winner != null) {
-                println("A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${winner.getHand().getScore()}, ele recebeu +$generalBet dinheiros")
+                println(generalBet)
+                println(winner)
+                println(
+                    "A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${
+                        winner.getHand().getScore()
+                    }, ele recebeu +$generalBet dinheiros"
+                )
                 winner.setMoney(winner.getMoney() + generalBet)
+                println(generalBet)
+                println(winner)
             } else {
                 println("A partida(MATCH) acabou, nenhum vencedor encontrado.")
             }
@@ -159,7 +199,7 @@ class Game {
     fun findWinner(jogadores: List<Player>): Player? {
         return jogadores
             .filter { it.getHand().getScore() < 21 }
-            .maxByOrNull { it.getHand().getScore() } 
+            .maxByOrNull { it.getHand().getScore() }
 
     }
 }

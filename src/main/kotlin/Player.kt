@@ -5,7 +5,7 @@ import java.util.*
 
 open class Player(private var money: Int = 100) {
 
-    private val hand = Hand()
+    protected var hand = Hand()
     private var playerName: String = ""
     private var gameDateTime: Date? = null
     private var bet: Int = 0
@@ -33,6 +33,10 @@ open class Player(private var money: Int = 100) {
 
     fun getHand(): Hand {
         return hand
+    }
+
+    fun setHand(trunk: Hand){
+        hand = trunk
     }
 
     fun getStand(): Boolean {
@@ -104,7 +108,7 @@ open class Player(private var money: Int = 100) {
 
     }
 
-    fun makeDecision(deck: MutableList<Card>) {
+    open fun makeDecision(deck: MutableList<Card>) {
         val input = Scanner(System.`in`)
         var decision: String = ""
         var getNum = true
