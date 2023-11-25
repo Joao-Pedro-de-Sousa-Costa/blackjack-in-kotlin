@@ -1,14 +1,16 @@
 package src.main.kotlin
+import CPUPlayer
 import java.util.Scanner
 
 class Game {
     private var player1 = Player()
     //private var machine = CPUPlayer()
     private var deck = Card.createDeck()
+    private var playedCards = mutableListOf<Card>()
     private var machines = mutableListOf<CPUPlayer>()
     private val results = mutableListOf<Player>()
 
-    val scanner = Scanner(System.`in`)
+    private val scanner = Scanner(System.`in`)
 
     private var quantMatchs = 1
 
@@ -22,17 +24,18 @@ class Game {
 
     private fun resetGame() {
         player1.setMoney(Player().getMoney())
-        player1.setHand(Hand())
+        player1.hand = Hand()
         //machine = CPUPlayer()
         machines = mutableListOf()
         deck = Card.createDeck()
+        playedCards = mutableListOf()
 
     }
 
     private fun resetMatch() {
-        player1.setHand(Hand())
+        player1.hand = Hand()
         for (machine in machines) {
-            machine.setHand(Hand())
+            machine.hand = Hand()
         }
     }
 
@@ -68,7 +71,7 @@ class Game {
             modeNormalGame()
 
         } else if (choice == 2) {
-            //modeDoublegame()
+            modeDoublegame()
 
         } else if (choice == 3) {
             return
@@ -84,8 +87,6 @@ class Game {
     private fun modeNormalGame() {
 
         println(machines)
-
-
 
         var choice = "s"
         println("Gerando arquivo do jogo...")//Fazer os resultados
@@ -110,7 +111,9 @@ class Game {
             println("${index + 1}. $playerName - Dinheiro: $money")
         }
 
+    }
 
+    private fun modeDoublegame(){
 
     }
 
@@ -134,28 +137,29 @@ class Game {
                 machine.placeBet(player1.getBet())
                 println("Depois: $machine")
             }
-
-            var generalBet = (listOf(player1) + machines).sumOf { it.getBet() }
+            var allPlayer = (listOf(player1) + machines)
+            var generalBet = allPlayer.sumOf { it.getBet() }
             println(generalBet)
 
             for (player in listOf(player1) + machines) {
-                player.getHand().dealCard(deck)
-                player.getHand().dealCard(deck)
+                player.hand.dealCard(deck,playedCards)
+                player.hand.dealCard(deck,playedCards)
                 println(player)
             }
 
             for (player in listOf(player1) + machines) {
                 println("Turno do jogador ${player.getName()}")
 
-                if (player.getHand().getScore() == 21) {
+                if (player.hand.getScore() == 21) {
                     println("A partida acabou(MATCH), o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
                     player.setMoney((player.getMoney() + generalBet))
                     println(player)
                     return
                 }
-                player.makeDecision(deck)
+                player.makeDecision(deck,playedCards)
+                generalBet = allPlayer.sumOf { it.getBet() }
 
-                if (player.getHand().getScore() == 21) {
+                if (player.hand.getScore() == 21) {
                     println("A partida(MATCH) acabou, o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
                     player.setMoney((player.getMoney() + generalBet))
                     println(player)
@@ -171,7 +175,7 @@ class Game {
                 println(winner)
                 println(
                     "A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${
-                        winner.getHand().getScore()
+                        winner.hand.getScore()
                     }, ele recebeu +$generalBet dinheiros"
                 )
                 winner.setMoney(winner.getMoney() + generalBet)
@@ -187,7 +191,7 @@ class Game {
             println("Salvando resultados...")//Fazer o metodo que salva os resultados
             println("Deseja continuar jogando? (S/N)")
             var choice = scanner.next().lowercase()
-            if (choice.equals("s")) {
+            if (choice == "s") {
                 menu()
             } else {
                 return
@@ -198,8 +202,8 @@ class Game {
 
     fun findWinner(jogadores: List<Player>): Player? {
         return jogadores
-            .filter { it.getHand().getScore() < 21 }
-            .maxByOrNull { it.getHand().getScore() }
+            .filter { it.hand.getScore() < 21 }
+            .maxByOrNull { it.hand.getScore() }
 
     }
 }

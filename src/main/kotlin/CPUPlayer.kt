@@ -1,51 +1,43 @@
-package src.main.kotlin
-
-import java.lang.Exception
-import java.util.*
+import src.main.kotlin.Card
+import src.main.kotlin.Player
 
 class CPUPlayer : Player() {
 
-    override fun makeDecision(deck: MutableList<Card>) {
-        val input = Scanner(System.`in`)
-        var decision: String = ""
-        var getNum = true
+    private val cardCounter = CardCounter()
 
-        while (getNum) {
-            try {
-                println("Qual a sua opção?")
-                println(" --HIT-- \n --DOUBLE-- \n --STAND--")
-                decision = input.next().lowercase()
-                getNum = false
-            } catch (e: Exception) {
-                println("Invalido")
-                input.next()
+    override fun makeDecision(deck: MutableList<Card>, playedCards: MutableList<Card>) {
+        var lal = true
+
+        while (hand.getScore() < 21 || lal) {
+
+
+            for (playedCard in playedCards) {
+                cardCounter.updateCount(playedCard)
             }
-        }
 
-        if (decision.equals("hit")) {
-            this.hit(deck)
+            val currentCount = cardCounter.getCount()
 
-            if (this.hand.getScore() > 20) {
-                return
+            if (hand.getScore() < 12) {
+                hit(deck, playedCards)
             } else {
-                this.makeDecision(deck)
+                if (currentCount < 0) {
+                    if (hand.getScore() < 17) {
+                        hit(deck, playedCards)
+                    } else {
+                        stand()
+                        lal = false
+
+                    }
+                } else {
+                    if (hand.getScore() < 15) {
+                        hit(deck, playedCards)
+                    } else stand(); lal = false
+                }
             }
 
-        } else if (decision.equals("double")) {
-            this.doubleDown(deck)
 
-            if (this.hand.getScore() > 20) {
-                return
-            } else {
-                makeDecision(deck)
-            }
-
-        } else {
-            this.stand()
+            cardCounter.resetCount()
         }
-
-
     }
-
-
 }
+

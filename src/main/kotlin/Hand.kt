@@ -7,14 +7,18 @@ class Hand {
         cards.add(card)
     }
 
-    fun dealCard(deck: MutableList<Card>): Card? {
+    fun dealCard(deck: MutableList<Card>, playedCards: MutableList<Card>): Card? {
         if (deck.isNotEmpty()) {
-            val lastCard = deck.removeAt(deck.size - 1)
-            add(lastCard)
-            return lastCard
-        } else {
-            return null
+            // Lógica para garantir que a carta retirada do deck não tenha sido jogada anteriormente
+            val lastCard = deck.lastOrNull { it !in playedCards }
+            if (lastCard != null) {
+                deck.remove(lastCard)
+                add(lastCard)
+                playedCards += lastCard
+                return lastCard
+            }
         }
+        return null
     }
 
     fun getScore(): Int { // Verifica se a mão tem um Ás, se houver, ele vai incrementar o num e avaliar, caso o score seja maior que 10, As = 1, numAces--

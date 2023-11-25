@@ -5,7 +5,7 @@ import java.util.*
 
 open class Player(private var money: Int = 100) {
 
-    protected var hand = Hand()
+    var hand = Hand()
     private var playerName: String = ""
     private var gameDateTime: Date? = null
     private var bet: Int = 0
@@ -31,13 +31,6 @@ open class Player(private var money: Int = 100) {
         return bet
     }
 
-    fun getHand(): Hand {
-        return hand
-    }
-
-    fun setHand(trunk: Hand){
-        hand = trunk
-    }
 
     fun getStand(): Boolean {
         return standing
@@ -62,9 +55,9 @@ open class Player(private var money: Int = 100) {
 
     // Jogadas:
 
-    fun hit(deck: MutableList<Card>) {
+    fun hit(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         if (hand.getScore() <= 21) {
-            val newCard = hand.dealCard(deck)
+            val newCard = hand.dealCard(deck,playedCards)
             println("O jogador ${getName()} solicitou uma carta.")
 
             if (newCard != null) {
@@ -79,12 +72,12 @@ open class Player(private var money: Int = 100) {
         }
     }
 
-    fun doubleDown(deck: MutableList<Card>): Int {
+    fun doubleDown(deck: MutableList<Card>, playedCards: MutableList<Card>): Int {
         println("O jogador ${getName()} deseja dobrar a aposta.")
         val originalBet = bet
 
         if (hand.getScore() <= 21 && money >= originalBet * 2) {
-            val newCard = hand.dealCard(deck)
+            val newCard = hand.dealCard(deck,playedCards)
             println("${getName()} recebeu uma carta: $newCard")
 
             money -= originalBet
@@ -108,7 +101,7 @@ open class Player(private var money: Int = 100) {
 
     }
 
-    open fun makeDecision(deck: MutableList<Card>) {
+    open fun makeDecision(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         val input = Scanner(System.`in`)
         var decision: String = ""
         var getNum = true
@@ -126,21 +119,21 @@ open class Player(private var money: Int = 100) {
         }
 
         if (decision.equals("hit")) {
-            this.hit(deck)
+            this.hit(deck, playedCards)
 
             if (this.hand.getScore() > 20) {
                 return
             } else {
-                this.makeDecision(deck)
+                this.makeDecision(deck, playedCards)
             }
 
         } else if (decision.equals("double")) {
-            this.doubleDown(deck)
+            this.doubleDown(deck, playedCards)
 
             if (this.hand.getScore() > 20) {
                 return
             } else {
-                makeDecision(deck)
+                makeDecision(deck, playedCards)
             }
 
         } else {
