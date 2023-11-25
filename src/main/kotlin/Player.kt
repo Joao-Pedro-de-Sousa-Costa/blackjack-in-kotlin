@@ -12,10 +12,11 @@ open class Player(private var money: Int = 100) {
     private var wins: Int = 0
     private var standing: Boolean = false
 
-    fun getMoney(): Int{
+    fun getMoney(): Int {
         return money
     }
-    fun setMoney(Pmoney: Int){
+
+    fun setMoney(Pmoney: Int) {
         money = Pmoney
     }
 
@@ -57,7 +58,7 @@ open class Player(private var money: Int = 100) {
 
     fun hit(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         if (hand.getScore() <= 21) {
-            val newCard = hand.dealCard(deck,playedCards)
+            val newCard = hand.dealCard(deck, playedCards)
             println("O jogador ${getName()} solicitou uma carta.")
 
             if (newCard != null) {
@@ -77,7 +78,7 @@ open class Player(private var money: Int = 100) {
         val originalBet = bet
 
         if (hand.getScore() <= 21 && money >= originalBet * 2) {
-            val newCard = hand.dealCard(deck,playedCards)
+            val newCard = hand.dealCard(deck, playedCards)
             println("${getName()} recebeu uma carta: $newCard")
 
             money -= originalBet
