@@ -96,7 +96,7 @@ class Blackjack {
                     }
                 } catch (e: java.util.InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
-                    scanner.next() // Limpar a entrada incorreta
+                    scanner.next()
                 }
             }
             modeNormalGame()
@@ -122,7 +122,7 @@ class Blackjack {
                     break
                 } catch (e: java.util.InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
-                    scanner.next() // Limpar a entrada incorreta
+                    scanner.next()
                 }
             }
         }

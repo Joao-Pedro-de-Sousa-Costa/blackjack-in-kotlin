@@ -8,7 +8,7 @@ class CPUPlayer : Player() {
     override fun makeDecision(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         var lal = true
 
-        while (hand.getScore() < 21 || lal) {
+        while (hand.getScore() < 21 && lal) {
 
 
             for (playedCard in playedCards) {
@@ -37,8 +37,6 @@ class CPUPlayer : Player() {
 
 
             cardCounter.resetCount()
-            lal = false
-            stand()
         }
     }
 }

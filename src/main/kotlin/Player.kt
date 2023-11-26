@@ -110,7 +110,7 @@ open class Player(private var money: Int = 100) {
         while (getNum) {
             try {
                 println("Qual a sua opção?")
-                println(" --HIT-- \n --DOUBLE-- \n --STAND--")
+                println("[1] HIT \n[2] DOUBLE \n[3] STAND")
                 decision = input.next().lowercase()
                 getNum = false
             } catch (e: Exception) {
@@ -140,8 +140,6 @@ open class Player(private var money: Int = 100) {
         } else {
             this.stand()
         }
-
-
     }
 
     override fun toString(): String {
