@@ -37,6 +37,8 @@ class CPUPlayer : Player() {
 
 
             cardCounter.resetCount()
+            lal = false
+            stand()
         }
     }
 }

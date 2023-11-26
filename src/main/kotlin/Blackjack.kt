@@ -3,146 +3,189 @@ package src.main.kotlin
 import CPUPlayer
 import java.util.Scanner
 
-class Game {
-    private var player1 = Player()
+class Blackjack {
+    private val scanner = Scanner(System.`in`)
 
-    //private var machine = CPUPlayer()
+    private var human = Player()
+    private var machines = mutableListOf<CPUPlayer>()
+    private val gameResults = mutableListOf<Player>()
+
+    private val pair = mutableListOf<Pair>()
+    private val pairGameResults = mutableListOf<Pair>()
+
     private var deck = Card.createDeck()
     private var playedCards = mutableListOf<Card>()
-    private var machines = mutableListOf<CPUPlayer>()
-    private val duplas = mutableListOf<Dupla>()
-    private val results = mutableListOf<Player>()
-    private val doubleResults = mutableListOf<Dupla>()
-
-    private val scanner = Scanner(System.`in`)
 
     private var quantMatchs = 1
 
     init {
+        var name = ""
+        do {
+            print("Insira o seu nome: ")
+            name = readLine() ?: ""
+            if (name.isBlank()) {
+                println("Nome inválido, tente novamente.")
+            }
+        } while (name.isBlank())
 
-        println("Qual o seu nome? ")
-        player1.setName(scanner.next())
+        human.setName(name)
         menu()
-
     }
 
     private fun resetGame() {
-        player1.setMoney(Player().getMoney())
-        player1.hand = Hand()
-        //machine = CPUPlayer()
+        human.setMoney(Player().getMoney())
+        human.hand = Hand()
         machines = mutableListOf()
         deck = Card.createDeck()
         playedCards = mutableListOf()
-
     }
 
     private fun resetMatch() {
-        player1.hand = Hand()
+        human.hand = Hand()
         for (machine in machines) {
             machine.hand = Hand()
         }
     }
 
     fun menu() {
-
         resetGame()
-        var normalGame = false
-        var doubleGame = false
+        var isNormalGame = false
+        var isPairGame = false
 
         println("Escolha seu modo de jogo:")
-        println("[1] Modo Normal. \n[2] Modo duplas. \n [3] Sair.")
-        val choice = scanner.nextInt()
+        println("[1] Padrão \n[2] Duplas \n[3] Sair")
 
-        if (choice == 1) {
-            normalGame = true
-
-        } else if (choice == 2) {
-            doubleGame = true
-
-        } else if (choice == 3) {
-            return
-
-        } else {
-            println("Comando invalido.")
+        try {
+            when (val choice = scanner.nextInt()) {
+                1 -> isNormalGame = true
+                2 -> isPairGame = true
+                3 -> return
+                else -> {
+                    println("Comando inválido, insira novamente.")
+                    menu()
+                    return
+                }
+            }
+        } catch (e: java.util.InputMismatchException) {
+            println("Entrada inválida. Por favor, insira um número.")
+            scanner.next() // Limpar a entrada incorreta
             menu()
+            return
         }
 
-        if (normalGame) {
-            println("Escolha a quantidade de desafiantes:")
-            println("[1] Desafiante. \n[2] Desafiantes. \n [3] Desafiantes. \n [4] Sair.")
-            var numberOfOpponents: Int = scanner.nextInt()
+        if (isNormalGame) {
+            while (true) {
+                println("Insira a quantidade de desafiantes: ")
+                println("[1] 1v1 \n[2] 1v2 \n[3] 1v3 \n[4] Sair")
 
-            if (numberOfOpponents in setOf(1, 2, 3)) {
-                for (i in 1..numberOfOpponents) {
-                    val newMachine = CPUPlayer()
-                    newMachine.setName("Oponente$i")
-                    machines.add(newMachine)
+                try {
+                    when (val opponentsChoice = scanner.nextInt()) {
+                        in setOf(1, 2, 3) -> {
+                            for (i in 1..opponentsChoice) {
+                                val newMachine = CPUPlayer()
+                                newMachine.setName("Oponente$i")
+                                machines.add(newMachine)
+                            }
+                            break
+                        }
+
+                        4 -> return
+                        else -> {
+                            println("Comando inválido, tente novamente.")
+                        }
+                    }
+                } catch (e: java.util.InputMismatchException) {
+                    println("Entrada inválida. Por favor, insira um número.")
+                    scanner.next() // Limpar a entrada incorreta
                 }
-
-            } else if (numberOfOpponents == 4) {
-                return
-            } else {
-                println("Comando invalido")
-                menu()
             }
             modeNormalGame()
-        } else {
-            println("Escolha a quantidade de duplas (mínimo 2, máximo 4):")
-            val numberOfDuplas: Int = scanner.nextInt()
-
-            if (numberOfDuplas in 2..4) {
-                for (i in 1..numberOfDuplas) {
-                    val newDupla = Dupla(player1, CPUPlayer())
-                    duplas.add(newDupla)
-                }
-
-                for (i in 1..(7 - numberOfDuplas)) {
-                    machines.add(CPUPlayer())
-                }
-            } else {
-                println("Número de duplas inválido.")
-                menu()
-                return
-            }
-            modeDoublegame()
         }
 
+        if (isPairGame) {
+            while (true) {
+                println("Escolha a quantidade de duplas:")
+                println("[1] 2v2 \n[2] 2v4 \n[3] 2v6 \n[4] Sair")
+
+                try {
+                    when (val option: Int = scanner.nextInt()) {
+                        1 -> createPairs(2)
+                        2 -> createPairs(4)
+                        3 -> createPairs(6)
+                        4 -> return
+                        else -> {
+                            println("Opção inválida, tente novamente.")
+                            continue
+                        }
+                    }
+                    modeDoublegame()
+                    break
+                } catch (e: java.util.InputMismatchException) {
+                    println("Entrada inválida. Por favor, insira um número.")
+                    scanner.next() // Limpar a entrada incorreta
+                }
+            }
+        }
     }
 
+    private fun createPairs(numPairs: Int) {
+        pair.clear()
+        machines.clear()
+
+        val firstPair = Pair(human, CPUPlayer())
+        machines.add(firstPair.jogador2 as CPUPlayer)
+        pair.add(firstPair)
+
+        for (i in 1..numPairs/2) {
+            val newMachine1 = CPUPlayer()
+            newMachine1.setName("Máquina$i-A")
+            machines.add(newMachine1)
+
+            val newMachine2 = CPUPlayer()
+            newMachine2.setName("Máquina$i-B")
+            machines.add(newMachine2)
+
+            val newPair = Pair(newMachine1, newMachine2)
+            pair.add(newPair)
+        }
+    }
 
     private fun modeNormalGame() {
-
         println(machines)
 
-        var choice = "s"
-        println("Gerando arquivo do jogo...")//Fazer os resultados
-
-        while (choice == "s" && deck.size >= (1 + machines.size) * 2) {
-            println("Iniando Partida...")
+        var choice: String
+        while (true) {
+            println("Iniciando Partida...")
             match()
-            quantMatchs++
-            print("Deseja continuar jogando?(S/N)")
-            choice = scanner.next().lowercase()
-            if (choice == "s") resetMatch()
+            ++quantMatchs
+
+            try {
+                print("Deseja continuar jogando? (S/N)")
+                choice = scanner.next().lowercase()
+                if (choice != "s") break
+                resetMatch()
+            } catch (e: java.util.InputMismatchException) {
+                println("Entrada inválida. Por favor, insira uma opção válida.")
+                scanner.next() // Limpar a entrada incorreta
+            }
         }
 
+        val sortedResults = gameResults.sortedByDescending { it.getMoney() }
 
-        val sortedResults = results.sortedByDescending { it.getMoney() }
-
-        // Exibir o pódio
         println("Podium:")
-        for ((index, player) in sortedResults.withIndex()) {
-            val playerName = player.getName()
+        sortedResults.forEachIndexed { index, player ->
+            val playerName = player.getName() ?: "Desconhecido"
             val money = player.getMoney()
             println("${index + 1}. $playerName - Dinheiro: $money")
         }
-
     }
 
     private fun modeDoublegame() {
 
         var choice = "s"
         println("Gerando arquivo do jogo...")//Fazer os resultados
+        println("Quantidade de inimigos selecionados:$pair");
+        println(machines)
 
         while (choice == "s" && deck.size >= (1 + machines.size) * 2) {
             println("Iniando Partida...")
@@ -154,7 +197,7 @@ class Game {
         }
 
 
-        val sortedResults = doubleResults.sortedByDescending { it.getApostaTotal() }
+        val sortedResults = pairGameResults.sortedByDescending { it.getApostaTotal() }
 
 // Exibir o pódio
         println("Podium:")
@@ -170,9 +213,9 @@ class Game {
 
     private fun match() {
 
-        for (dupla in duplas) {
-            results.add(dupla.jogador1)
-            results.add(dupla.jogador2)
+
+        for (player in listOf(human) + machines) {
+            gameResults.add(player)
         }
 
         var quantPlayers = 1 + machines.size
@@ -181,25 +224,25 @@ class Game {
             println("Partida $quantMatchs")
             val scanner = Scanner(System.`in`)
             println("Quanto voce quer apostar?")
-            player1.placeBet(scanner.nextInt())
+            human.placeBet(scanner.nextInt())
 
 
             machines.forEach { machine ->
                 println("Antes: $machine")
-                machine.placeBet(player1.getBet())
+                machine.placeBet(human.getBet())
                 println("Depois: $machine")
             }
-            var allPlayer = (listOf(player1) + machines)
+            var allPlayer = (listOf(human) + machines)
             var generalBet = allPlayer.sumOf { it.getBet() }
             println(generalBet)
 
-            for (player in listOf(player1) + machines) {
+            for (player in listOf(human) + machines) {
                 player.hand.dealCard(deck, playedCards)
                 player.hand.dealCard(deck, playedCards)
                 println(player)
             }
 
-            for (player in listOf(player1) + machines) {
+            for (player in listOf(human) + machines) {
                 println("Turno do jogador ${player.getName()}")
 
                 if (player.hand.getScore() == 21) {
@@ -221,14 +264,14 @@ class Game {
                 }
             }
 
-            val winner = findWinner(listOf(player1) + machines)
+            val winner = findWinner(listOf(human) + machines)
             if (winner != null) {
                 println(generalBet)
                 println(winner)
                 println(
-                    "A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${
-                        winner.hand.getScore()
-                    }, ele recebeu +$generalBet dinheiros"
+                        "A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${
+                            winner.hand.getScore()
+                        }, ele recebeu +$generalBet dinheiros"
                 )
                 winner.setMoney(winner.getMoney() + generalBet)
                 println(generalBet)
@@ -252,9 +295,9 @@ class Game {
     }
 
     private fun matchInDouble() {
-        for (dupla in duplas) {
-            results.add(dupla.jogador1)
-            results.add(dupla.jogador2)
+        for (dupla in pair) {
+            gameResults.add(dupla.jogador1)
+            gameResults.add(dupla.jogador2)
         }
 
         var quantPlayers = 1 + machines.size
@@ -266,22 +309,22 @@ class Game {
             println("Quanto você quer apostar?")
             val apostaJogador1 = scanner.nextInt()
 
-            for (dupla in duplas) {
+            for (dupla in pair) {
                 dupla.jogador1.placeBet(apostaJogador1)
                 dupla.jogador2.placeBet(apostaJogador1)
             }
 
-            var generalBet = duplas.sumOf { it.getApostaTotal() }
+            var generalBet = pair.sumOf { it.getApostaTotal() }
             println("Aposta total: $generalBet")
 
-            for (dupla in duplas) {
+            for (dupla in pair) {
                 dupla.jogador1.hand.dealCard(deck, playedCards)
                 dupla.jogador1.hand.dealCard(deck, playedCards)
                 dupla.jogador2.hand.dealCard(deck, playedCards)
                 dupla.jogador2.hand.dealCard(deck, playedCards)
             }
 
-            for (dupla in duplas) {
+            for (dupla in pair) {
                 println("Turno da dupla: ${dupla.name}")
 
                 // Turnos alternados entre os jogadores da dupla
@@ -297,7 +340,7 @@ class Game {
                     }
 
                     jogador.makeDecision(deck, playedCards)
-                    generalBet = duplas.sumOf { it.getApostaTotal() }
+                    generalBet = pair.sumOf { it.getApostaTotal() }
 
                     if (dupla.getDoubleScore() == 42) {
                         println("A partida acabou(MATCH), o vencedor é $dupla, eles receberam +$generalBet dinheiros(mais 20% por ser um double blackjack)")
@@ -307,14 +350,14 @@ class Game {
                     }
                 }
             }
-            val winners = findWinningDouble(duplas)
+            val winners = findWinningDouble(pair)
             if (winners != null) {
                 println(generalBet)
                 println(winners)
                 println(
-                    "A partida(MATCH) acabou, o vencedor é o ${winners.name} com escore ${
-                        winners.getDoubleScore()
-                    }, eles receberam +$generalBet dinheiros"
+                        "A partida(MATCH) acabou, o vencedor é o ${winners.name} com escore ${
+                            winners.getDoubleScore()
+                        }, eles receberam +$generalBet dinheiros"
                 )
                 winners.money += generalBet
                 println(generalBet)
@@ -341,14 +384,14 @@ class Game {
 
     fun findWinner(jogadores: List<Player>): Player? {
         return jogadores
-            .filter { it.hand.getScore() < 21 }
-            .maxByOrNull { it.hand.getScore() }
+                .filter { it.hand.getScore() < 21 }
+                .maxByOrNull { it.hand.getScore() }
 
     }
 
-    fun findWinningDouble(duplas: List<Dupla>): Dupla? {
+    fun findWinningDouble(duplas: List<Pair>): Pair? {
         return duplas
-            .filter { it.getDoubleScore() < 42 }
-            .maxByOrNull { it.getDoubleScore() }
+                .filter { it.getDoubleScore() < 42 }
+                .maxByOrNull { it.getDoubleScore() }
     }
 }

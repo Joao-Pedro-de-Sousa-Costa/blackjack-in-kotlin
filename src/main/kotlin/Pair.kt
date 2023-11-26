@@ -1,6 +1,6 @@
 package src.main.kotlin
 
-data class Dupla(val jogador1: Player, val jogador2: Player) {
+data class Pair(val jogador1: Player, val jogador2: Player) {
 
     var name: String = jogador1.getName() + "'s"
     var money: Int = jogador1.getMoney() + jogador2.getMoney()
