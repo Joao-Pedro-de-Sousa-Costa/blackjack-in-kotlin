@@ -1,5 +1,4 @@
 package src.main.kotlin
-
 import CPUPlayer
 import java.util.Scanner
 
@@ -52,7 +51,7 @@ class Blackjack {
         var isNormalGame = false
         var isPairGame = false
 
-        println("Escolha seu modo de jogo:")
+        println("\nEscolha seu modo de jogo:")
         println("[1] Padrão \n[2] Duplas \n[3] Sair")
 
         try {
@@ -75,7 +74,7 @@ class Blackjack {
 
         if (isNormalGame) {
             while (true) {
-                println("Insira a quantidade de desafiantes: ")
+                println("\nInsira a quantidade de desafiantes: ")
                 println("[1] 1v1 \n[2] 1v2 \n[3] 1v3 \n[4] Sair")
 
                 try {
@@ -104,7 +103,7 @@ class Blackjack {
 
         if (isPairGame) {
             while (true) {
-                println("Escolha a quantidade de duplas:")
+                println("\nEscolha a quantidade de duplas:")
                 println("[1] 2v2 \n[2] 2v4 \n[3] 2v6 \n[4] Sair")
 
                 try {
@@ -118,7 +117,7 @@ class Blackjack {
                             continue
                         }
                     }
-                    modeDoublegame()
+                    modePairGame()
                     break
                 } catch (e: java.util.InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
@@ -151,22 +150,29 @@ class Blackjack {
     }
 
     private fun modeNormalGame() {
-        println(machines)
-
-        var choice: String
         while (true) {
-            println("Iniciando Partida...")
             match()
             ++quantMatchs
 
             try {
-                print("Deseja continuar jogando? (S/N)")
-                choice = scanner.next().lowercase()
-                if (choice != "s") break
-                resetMatch()
+                print("Deseja continuar jogando? \n" +
+                        "[S] Continuar\n" +
+                        "[N] Sair")
+                val option: String = scanner.next().lowercase()
+
+                when (option) {
+                    "s" -> {
+                        menu()
+                        break
+                    }
+                    "n" -> return
+                    else -> {
+                        println("Opção inválida, tente novamente.")
+                    }
+                }
             } catch (e: java.util.InputMismatchException) {
                 println("Entrada inválida. Por favor, insira uma opção válida.")
-                scanner.next() // Limpar a entrada incorreta
+                scanner.next()
             }
         }
 
@@ -180,117 +186,130 @@ class Blackjack {
         }
     }
 
-    private fun modeDoublegame() {
-
-        var choice = "s"
-        println("Gerando arquivo do jogo...")//Fazer os resultados
-        println("Quantidade de inimigos selecionados:$pair");
-        println(machines)
-
-        while (choice == "s" && deck.size >= (1 + machines.size) * 2) {
-            println("Iniando Partida...")
+    private fun modePairGame() {
+        while (true) {
+            println("Iniciando Partida...")
             matchInDouble()
-            quantMatchs++
-            print("Deseja continuar jogando?(S/N)")
-            choice = scanner.next().lowercase()
-            if (choice == "s") resetMatch()
+            ++quantMatchs
+
+            try {
+                print("Deseja continuar jogando? \n" +
+                        "[S] Continuar\n" +
+                        "[N] Sair")
+                val option: String = scanner.next().lowercase()
+
+                when (option) {
+                    "s" -> {
+                        menu()
+                        break
+                    }
+                    "n" -> return
+                    else -> {
+                        println("Opção inválida, tente novamente.")
+                    }
+                }
+            } catch (e: java.util.InputMismatchException) {
+                println("Entrada inválida. Por favor, insira uma opção válida.")
+                scanner.next()
+            }
         }
 
+        val sortedResults = gameResults.sortedByDescending { it.getMoney() }
 
-        val sortedResults = pairGameResults.sortedByDescending { it.getApostaTotal() }
-
-// Exibir o pódio
         println("Podium:")
-        for ((index, dupla) in sortedResults.withIndex()) {
-            val duplaNome = dupla.name
-            val jogador1Nome = dupla.jogador1.getName()
-            val jogador2Nome = dupla.jogador2.getName()
-            val dinheiro = dupla.getApostaTotal()
-            println("${index + 1}. $duplaNome - Jogadores: $jogador1Nome, $jogador2Nome - Dinheiro: $dinheiro")
+        sortedResults.forEachIndexed { index, player ->
+            val playerName = player.getName() ?: "Desconhecido"
+            val money = player.getMoney()
+            println("${index + 1}. $playerName - Dinheiro: $money")
         }
-
     }
 
     private fun match() {
+        val allPlayers = listOf(human) + machines
 
-
-        for (player in listOf(human) + machines) {
+        for (player in allPlayers) {
             gameResults.add(player)
         }
 
-        var quantPlayers = 1 + machines.size
-        if (deck.size >= quantPlayers * 2) {
+        val numPlayers = 1 + machines.size
+        if (deck.size < numPlayers * 2) {
+            println("A quantidade de cartas no deck é insuficiente para uma partida.\nFIM DE JOGO.")
+            println("Salvando resultados...") // Fazer o método que salva os resultados
 
-            println("Partida $quantMatchs")
-            val scanner = Scanner(System.`in`)
-            println("Quanto voce quer apostar?")
-            human.placeBet(scanner.nextInt())
+            while (true) {
+                try {
+                    print("Deseja continuar jogando? \n" +
+                            "[S] Continuar\n" +
+                            "[N] Sair")
+                    val option: String = scanner.next().lowercase()
 
-
-            machines.forEach { machine ->
-                println("Antes: $machine")
-                machine.placeBet(human.getBet())
-                println("Depois: $machine")
-            }
-            var allPlayer = (listOf(human) + machines)
-            var generalBet = allPlayer.sumOf { it.getBet() }
-            println(generalBet)
-
-            for (player in listOf(human) + machines) {
-                player.hand.dealCard(deck, playedCards)
-                player.hand.dealCard(deck, playedCards)
-                println(player)
-            }
-
-            for (player in listOf(human) + machines) {
-                println("Turno do jogador ${player.getName()}")
-
-                if (player.hand.getScore() == 21) {
-                    println("A partida acabou(MATCH), o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
-                    player.setMoney((player.getMoney() + generalBet))
-                    println(player)
-                    return
-                }
-                player.makeDecision(deck, playedCards)
-                generalBet = allPlayer.sumOf { it.getBet() }
-
-                if (player.hand.getScore() == 21) {
-                    println("A partida(MATCH) acabou, o vencedor é o $player, ele recebeu +$generalBet dinheiros(mais 20% por ser um blackjack)")
-                    player.setMoney((player.getMoney() + generalBet))
-                    println(player)
-
-                    return
-
+                    when (option) {
+                        "s" -> {
+                            menu()
+                            break
+                        }
+                        "n" -> return
+                        else -> {
+                            println("Opção inválida, tente novamente.")
+                        }
+                    }
+                } catch (e: java.util.InputMismatchException) {
+                    println("Entrada inválida. Por favor, insira uma opção válida.")
+                    scanner.next()
                 }
             }
+        }
 
-            val winner = findWinner(listOf(human) + machines)
-            if (winner != null) {
-                println(generalBet)
-                println(winner)
-                println(
-                        "A partida(MATCH) acabou, o vencedor é o ${winner.getName()} com escore ${
-                            winner.hand.getScore()
-                        }, ele recebeu +$generalBet dinheiros"
-                )
-                winner.setMoney(winner.getMoney() + generalBet)
-                println(generalBet)
-                println(winner)
-            } else {
-                println("A partida(MATCH) acabou, nenhum vencedor encontrado.")
-            }
+        println("\nPartida $quantMatchs")
+        val scanner = Scanner(System.`in`)
 
-        } else {
-            println("A quantidade de cartas no deck é insuficiente pra uma partida, FIM DE JOGO.")
-            println("Salvando resultados...")//Fazer o metodo que salva os resultados
-            println("Deseja continuar jogando? (S/N)")
-            var choice = scanner.next().lowercase()
-            if (choice == "s") {
-                menu()
-            } else {
+        print("\nInsira o valor que deseja apostar: ")
+        human.placeBet(scanner.nextInt())
+
+        machines.forEach { machine ->
+            machine.placeBet(human.getBet())
+        }
+
+        var generalBet = allPlayers.sumOf { it.getBet() }
+        println("Valor total da mesa: $generalBet")
+
+        println("\nOPONENTES EM MESA\n")
+
+        for (player in allPlayers) {
+
+
+            player.hand.dealCard(deck, playedCards)
+            player.hand.dealCard(deck, playedCards)
+            println(player)
+        }
+
+        for (player in allPlayers) {
+            println("\nTurno de: ${player.getName()}")
+
+            if (player.hand.getScore() == 21) {
+                println("A partida acabou, o vencedor é o $player.\nValor recebido: $generalBet (+20% por ser um Blackjack)")
+                player.setMoney(player.getMoney() + generalBet)
                 return
             }
 
+            player.makeDecision(deck, playedCards)
+            generalBet = allPlayers.sumOf { it.getBet() }
+
+            if (player.hand.getScore() == 21) {
+                println("A partida acabou, o vencedor é o $player.\nValor recebido: $generalBet (+20% por ser um Blackjack)")
+                player.setMoney(player.getMoney() + generalBet)
+                return
+            }
+        }
+
+        val winner = findWinner(allPlayers)
+        if (winner != null) {
+            println(generalBet)
+            println(winner)
+            println("A partida acabou, o vencedor é o ${winner.getName()} com score ${winner.hand.getScore()}.\nValor recebido: $generalBet")
+            winner.setMoney(winner.getMoney() + generalBet)
+        } else {
+            println("A partida acabou, nenhum vencedor encontrado.")
         }
     }
 
@@ -300,86 +319,94 @@ class Blackjack {
             gameResults.add(dupla.jogador2)
         }
 
-        var quantPlayers = 1 + machines.size
-        if (deck.size >= quantPlayers * 2) {
+        val quantPlayers = 1 + machines.size
+        if (deck.size < quantPlayers * 2) {
+            println("A quantidade de cartas no deck é insuficiente para uma partida.\n FIM DE JOGO.")
+            println("Salvando resultados...")
 
-            println("Partida $quantMatchs")
-            val scanner = Scanner(System.`in`)
+            while (true) {
+                try {
+                    print("Deseja continuar jogando? \n" +
+                            "[S] Continuar\n" +
+                            "[N] Sair")
+                    val option: String = scanner.next().lowercase()
 
-            println("Quanto você quer apostar?")
-            val apostaJogador1 = scanner.nextInt()
-
-            for (dupla in pair) {
-                dupla.jogador1.placeBet(apostaJogador1)
-                dupla.jogador2.placeBet(apostaJogador1)
-            }
-
-            var generalBet = pair.sumOf { it.getApostaTotal() }
-            println("Aposta total: $generalBet")
-
-            for (dupla in pair) {
-                dupla.jogador1.hand.dealCard(deck, playedCards)
-                dupla.jogador1.hand.dealCard(deck, playedCards)
-                dupla.jogador2.hand.dealCard(deck, playedCards)
-                dupla.jogador2.hand.dealCard(deck, playedCards)
-            }
-
-            for (dupla in pair) {
-                println("Turno da dupla: ${dupla.name}")
-
-                // Turnos alternados entre os jogadores da dupla
-                for (jogador in listOf(dupla.jogador1, dupla.jogador2)) {
-                    println("Turno do jogador ${jogador.getName()}")
-
-                    // Lógica para o turno do jogador
-                    if (dupla.getDoubleScore() == 42) {
-                        println("A partida acabou(MATCH), o vencedor é o $dupla, eles receberam +$generalBet dinheiros(mais 20% por ser um double blackjack)")
-                        dupla.money += generalBet
-                        println(dupla)
-                        return
+                    when (option) {
+                        "s" -> {
+                            menu()
+                            break
+                        }
+                        "n" -> return
+                        else -> {
+                            println("Opção inválida, tente novamente.")
+                        }
                     }
-
-                    jogador.makeDecision(deck, playedCards)
-                    generalBet = pair.sumOf { it.getApostaTotal() }
-
-                    if (dupla.getDoubleScore() == 42) {
-                        println("A partida acabou(MATCH), o vencedor é $dupla, eles receberam +$generalBet dinheiros(mais 20% por ser um double blackjack)")
-                        dupla.money += generalBet
-                        println(dupla)
-                        return
-                    }
+                } catch (e: java.util.InputMismatchException) {
+                    println("Entrada inválida. Por favor, insira uma opção válida.")
+                    scanner.next()
                 }
             }
-            val winners = findWinningDouble(pair)
-            if (winners != null) {
-                println(generalBet)
-                println(winners)
-                println(
-                        "A partida(MATCH) acabou, o vencedor é o ${winners.name} com escore ${
-                            winners.getDoubleScore()
-                        }, eles receberam +$generalBet dinheiros"
-                )
-                winners.money += generalBet
-                println(generalBet)
-                println(winners)
-            } else {
-                println("A partida(MATCH) acabou, nenhum vencedor encontrado.")
-            }
-
-        } else {
-            println("A quantidade de cartas no deck é insuficiente pra uma partida, FIM DE JOGO.")
-            println("Salvando resultados...")//Fazer o metodo que salva os resultados
-            println("Deseja continuar jogando? (S/N)")
-            var choice = scanner.next().lowercase()
-            if (choice == "s") {
-                menu()
-            } else {
-                return
-            }
-
         }
 
+        println("Partida $quantMatchs")
+        val scanner = Scanner(System.`in`)
 
+        print("Insira o valor que deseja apostar: ")
+        val apostaJogador1 = scanner.nextInt()
+
+        for (dupla in pair) {
+            dupla.jogador1.placeBet(apostaJogador1)
+            dupla.jogador2.placeBet(apostaJogador1)
+        }
+
+        var generalBet = pair.sumOf { it.getApostaTotal() }
+        println("Aposta total: $generalBet")
+
+        for (dupla in pair) {
+            dupla.jogador1.hand.dealCard(deck, playedCards)
+            dupla.jogador1.hand.dealCard(deck, playedCards)
+            dupla.jogador2.hand.dealCard(deck, playedCards)
+            dupla.jogador2.hand.dealCard(deck, playedCards)
+        }
+
+        for (dupla in pair) {
+            println("Turno da dupla: ${dupla.name}")
+
+            for (jogador in listOf(dupla.jogador1, dupla.jogador2)) {
+                println("Turno do jogador ${jogador.getName()}")
+
+                if (dupla.getDoubleScore() == 42) {
+                    println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20% por ser um Blackjack)")
+                    dupla.money += generalBet
+                    println(dupla)
+                    return
+                }
+
+                jogador.makeDecision(deck, playedCards)
+                generalBet = pair.sumOf { it.getApostaTotal() }
+
+                if (dupla.getDoubleScore() == 42) {
+                    println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20% por ser um Double Blackjack)")
+                    dupla.money += generalBet
+                    println(dupla)
+                    return
+                }
+            }
+        }
+
+        val winners = findWinningDouble(pair)
+        if (winners != null) {
+            println(generalBet)
+            println(winners)
+            println(
+                "A partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
+            )
+            winners.money += generalBet
+            println(generalBet)
+            println(winners)
+        } else {
+            println("A partida acabou, nenhum vencedor encontrado.")
+        }
     }
 
     fun findWinner(jogadores: List<Player>): Player? {

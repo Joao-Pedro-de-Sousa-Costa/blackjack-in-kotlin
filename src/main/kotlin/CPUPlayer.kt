@@ -6,10 +6,9 @@ class CPUPlayer : Player() {
     private val cardCounter = CardCounter()
 
     override fun makeDecision(deck: MutableList<Card>, playedCards: MutableList<Card>) {
-        var lal = true
+        var makeNewDecision = true
 
-        while (hand.getScore() < 21 && lal) {
-
+        while (hand.getScore() < 21 && makeNewDecision) {
 
             for (playedCard in playedCards) {
                 cardCounter.updateCount(playedCard)
@@ -25,16 +24,17 @@ class CPUPlayer : Player() {
                         hit(deck, playedCards)
                     } else {
                         stand()
-                        lal = false
-
+                        makeNewDecision = false
                     }
                 } else {
                     if (hand.getScore() < 15) {
                         hit(deck, playedCards)
-                    } else stand(); lal = false
+                    } else {
+                        stand()
+                        makeNewDecision = false
+                    }
                 }
             }
-
 
             cardCounter.resetCount()
         }

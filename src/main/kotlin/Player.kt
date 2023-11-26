@@ -59,7 +59,7 @@ open class Player(private var money: Int = 100) {
     fun hit(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         if (hand.getScore() <= 21) {
             val newCard = hand.dealCard(deck, playedCards)
-            println("O jogador ${getName()} solicitou uma carta.")
+            println("\nO jogador ${getName()} solicitou uma carta.")
 
             if (newCard != null) {
                 println("${getName()} recebeu uma carta: $newCard")
@@ -74,7 +74,7 @@ open class Player(private var money: Int = 100) {
     }
 
     fun doubleDown(deck: MutableList<Card>, playedCards: MutableList<Card>): Int {
-        println("O jogador ${getName()} deseja dobrar a aposta.")
+        println("\nO jogador ${getName()} deseja dobrar a aposta.")
         val originalBet = bet
 
         if (hand.getScore() <= 21 && money >= originalBet * 2) {
@@ -96,7 +96,7 @@ open class Player(private var money: Int = 100) {
     }
 
     fun stand(): Boolean {
-        println("O jogador ${getName()} decidiu não pegar mais cartas")
+        println("\nO jogador ${getName()} decidiu não pegar mais cartas")
         standing = true
         return standing
 
@@ -104,41 +104,42 @@ open class Player(private var money: Int = 100) {
 
     open fun makeDecision(deck: MutableList<Card>, playedCards: MutableList<Card>) {
         val input = Scanner(System.`in`)
-        var decision: String = ""
+        var decision: Int = 0
         var getNum = true
 
         while (getNum) {
             try {
-                println("Qual a sua opção?")
+                println("\nO que você deseja realizar?")
                 println("[1] HIT \n[2] DOUBLE \n[3] STAND")
-                decision = input.next().lowercase()
-                getNum = false
-            } catch (e: Exception) {
-                println("Invalido")
-                input.next()
+                decision = input.nextInt()
+
+                if (decision in 1..3) {
+                    getNum = false
+                } else {
+                    println("Opção inválida. Digite 1, 2 ou 3.")
+                }
+            } catch (e: InputMismatchException) {
+                println("Valor inválido, tente novamente.")
+                input.next()  // Limpar a entrada incorreta
             }
         }
 
-        if (decision.equals("hit")) {
-            this.hit(deck, playedCards)
+        when (decision) {
+            1 -> {
+                this.hit(deck, playedCards)
 
-            if (this.hand.getScore() > 20) {
-                return
-            } else {
-                this.makeDecision(deck, playedCards)
+                if (this.hand.getScore() <= 20) {
+                    this.makeDecision(deck, playedCards)
+                }
             }
+            2 -> {
+                this.doubleDown(deck, playedCards)
 
-        } else if (decision.equals("double")) {
-            this.doubleDown(deck, playedCards)
-
-            if (this.hand.getScore() > 20) {
-                return
-            } else {
-                makeDecision(deck, playedCards)
+                if (this.hand.getScore() <= 20) {
+                    this.makeDecision(deck, playedCards)
+                }
             }
-
-        } else {
-            this.stand()
+            3 -> this.stand()
         }
     }
 
