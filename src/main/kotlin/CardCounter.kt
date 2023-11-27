@@ -18,7 +18,6 @@ class CardCounter {
 
     }
 
-
     fun resetCount() {
         // Reseta a contagem para 0
         count = 0

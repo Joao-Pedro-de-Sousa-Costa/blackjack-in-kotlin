@@ -27,7 +27,7 @@ class Blackjack {
 
     // Contadores de partidas e jogos
     private var quantMatchs = 1
-    private var quantGames = carregarQuantidadeDeJogos()
+    private var quantGames = loadGames()
 
     // Escritor para resultados
     val escritor = BufferedWriter(FileWriter("Resultados.txt", true))
@@ -38,7 +38,6 @@ class Blackjack {
 
     init {
         escritor.newLine()
-
 
         var name = ""
         do {
@@ -54,19 +53,7 @@ class Blackjack {
         escritor.close()
 
     }
-    private fun resetGame() {
-        human.setMoney(Player().getMoney())
-        human.hand = Hand()
-        machines = mutableListOf()
-        deck = Card.createDeck()
-        playedCards = mutableListOf()
-    }
-    private fun resetMatch() {
-        human.hand = Hand()
-        for (machine in machines) {
-            machine.hand = Hand()
-        }
-    }
+
     fun menu() {
         resetGame()
         var isNormalGame = false
@@ -119,7 +106,7 @@ class Blackjack {
                     scanner.next()
                 }
             }
-            modeNormalGame()
+            normalMode()
         }
 
         if (isPairGame) {
@@ -138,7 +125,7 @@ class Blackjack {
                             continue
                         }
                     }
-                    modePairGame()
+                    pairMode()
                     break
                 } catch (e: java.util.InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
@@ -147,31 +134,9 @@ class Blackjack {
             }
         }
     }
-    private fun createPairs(numPairs: Int) {
-        pair.clear()
-        machines.clear()
-
-        val firstPair = Pair<Any?,Any?>(human, CPUPlayer())
-        machines.add(firstPair.jogador2 as CPUPlayer)
-        firstPair.jogador2.setName("Maquina Aux")
-        pair.add(firstPair)
-
-        for (i in 1..numPairs / 2) {
-            val newMachine1 = CPUPlayer()
-            newMachine1.setName("Máquina$i A")
-            machines.add(newMachine1)
-
-            val newMachine2 = CPUPlayer()
-            newMachine2.setName("Máquina$i B")
-            machines.add(newMachine2)
-
-            val newPair = Pair<Any?,Any?>(newMachine1, newMachine2)
-            pair.add(newPair)
-        }
-    }
-    private fun modeNormalGame() {
+    private fun normalMode() {
         quantGames++
-        salvarQuantidadeDeJogos()
+        saveGames()
         escritor.newLine()
         escritor.append("${quantGames}. ---JOGO--- .${quantGames}")
         escritor.newLine()
@@ -192,33 +157,6 @@ class Blackjack {
             when (option) {
                 "s" -> resetMatch()
                 "n" -> return printResults(listOf(human)+machines)
-            }
-        }
-    }
-    private fun modePairGame() {
-        quantGames++
-        salvarQuantidadeDeJogos()
-        escritor.newLine()
-        escritor.append("${quantGames}. ---JOGO--- .${quantGames}")
-        escritor.newLine()
-        escritor.append("Hora atual: ${LocalTime.now().format(formatoHora)}; Data Atual: ${LocalDate.now().format(formatoData)}\n")
-        escritor.newLine()
-
-        while (deck.size >= (1 + machines.size) * 2) {
-            var option = ""
-            println(" ")
-            matchInDouble()
-            ++quantMatchs
-
-            while (option != "s" && option != "n") {
-                println("\nDeseja continuar jogando? \n" +
-                        "[S] Continuar\n" +
-                        "[N] Sair")
-                option = scanner.next().lowercase()
-            }
-            when (option) {
-                "s" -> resetMatch()
-                "n" -> return
             }
         }
     }
@@ -308,7 +246,62 @@ class Blackjack {
             scanner.next() // Limpar o buffer do scanner
         }
     }
-    private fun matchInDouble() {
+    fun findWinner(jogadores: List<Player>): Player? {
+        return jogadores
+            .filter { it.hand.getScore() < 21 }
+            .maxByOrNull { it.hand.getScore() }
+
+    }
+    private fun pairMode() {
+        quantGames++
+        saveGames()
+        escritor.newLine()
+        escritor.append("${quantGames}. ---JOGO--- .${quantGames}")
+        escritor.newLine()
+        escritor.append("Hora atual: ${LocalTime.now().format(formatoHora)}; Data Atual: ${LocalDate.now().format(formatoData)}\n")
+        escritor.newLine()
+
+        while (deck.size >= (1 + machines.size) * 2) {
+            var option = ""
+            println(" ")
+            pairMatch()
+            ++quantMatchs
+
+            while (option != "s" && option != "n") {
+                println("\nDeseja continuar jogando? \n" +
+                        "[S] Continuar\n" +
+                        "[N] Sair")
+                option = scanner.next().lowercase()
+            }
+            when (option) {
+                "s" -> resetMatch()
+                "n" -> return
+            }
+        }
+    }
+    private fun createPairs(numPairs: Int) {
+        pair.clear()
+        machines.clear()
+
+        val firstPair = Pair<Any?,Any?>(human, CPUPlayer())
+        machines.add(firstPair.jogador2 as CPUPlayer)
+        firstPair.jogador2.setName("Maquina Aux")
+        pair.add(firstPair)
+
+        for (i in 1..numPairs / 2) {
+            val newMachine1 = CPUPlayer()
+            newMachine1.setName("Máquina$i A")
+            machines.add(newMachine1)
+
+            val newMachine2 = CPUPlayer()
+            newMachine2.setName("Máquina$i B")
+            machines.add(newMachine2)
+
+            val newPair = Pair<Any?,Any?>(newMachine1, newMachine2)
+            pair.add(newPair)
+        }
+    }
+    private fun pairMatch() {
         println("Duplas: \n $pair")
 
         val numPlayers = 1 + machines.size
@@ -382,12 +375,12 @@ class Blackjack {
                     }
                 }
 
-                val winners = findWinningDouble(pair)
+                val winners = findPairWinning(pair)
                 if (winners != null) {
                     //println(generalBet)
                     //println(winners)
                     println(
-                            "\nA partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
+                        "\nA partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
                     )
                     winners.money += generalBet
                     //println(generalBet)
@@ -405,13 +398,7 @@ class Blackjack {
             scanner.next() // Limpar o buffer do scanner
         }
     }
-    fun findWinner(jogadores: List<Player>): Player? {
-        return jogadores
-                .filter { it.hand.getScore() < 21 }
-                .maxByOrNull { it.hand.getScore() }
-
-    }
-    fun findWinningDouble(duplas: List<Pair<Any?, Any?>>): Pair<Any?, Any?>? {
+    fun findPairWinning(duplas: List<Pair<Any?, Any?>>): Pair<Any?, Any?>? {
         return duplas
                 .filter {
                     it.getDoubleScore() < 42 &&
@@ -419,6 +406,19 @@ class Blackjack {
                             it.jogador2.hand.getScore() < 21
                 }
                 .maxByOrNull { it.getDoubleScore() }
+    }
+    private fun resetGame() {
+        human.setMoney(Player().getMoney())
+        human.hand = Hand()
+        machines = mutableListOf()
+        deck = Card.createDeck()
+        playedCards = mutableListOf()
+    }
+    private fun resetMatch() {
+        human.hand = Hand()
+        for (machine in machines) {
+            machine.hand = Hand()
+        }
     }
 
     fun printResults(users: List<Any>) {
@@ -451,11 +451,11 @@ class Blackjack {
 
         println("Resultados Salvos com sucesso!")
     }
-    fun salvarQuantidadeDeJogos() {
+    fun saveGames() {
         val arquivo = File("config.txt")
         arquivo.writeText(quantGames.toString())
     }
-    fun carregarQuantidadeDeJogos(): Int {
+    fun loadGames(): Int {
         val arquivo = File("config.txt")
         return if (arquivo.exists()) {
             arquivo.readText().toIntOrNull() ?: 0
