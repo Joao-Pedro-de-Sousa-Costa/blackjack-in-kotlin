@@ -45,6 +45,6 @@ class Hand {
     }
 
     override fun toString(): String {
-        return "Hand: $cards, Score: ${getScore()}"
+        return "Mão: $cards, Score: ${getScore()}"
     }
 }

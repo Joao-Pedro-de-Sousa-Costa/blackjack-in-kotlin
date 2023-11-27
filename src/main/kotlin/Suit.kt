@@ -1,10 +1,10 @@
 package src.main.kotlin
 
 enum class Suit(val suitName: String) {
-    CLUBS("Clubs"),
-    DIAMONDS("Diamonds"),
-    SPADES("Spades"),
-    HEARTS("Hearts");
+    CLUBS("Paus"),
+    DIAMONDS("Ouro"),
+    SPADES("Espadas"),
+    HEARTS("Copas");
 
     override fun toString(): String {
         return suitName

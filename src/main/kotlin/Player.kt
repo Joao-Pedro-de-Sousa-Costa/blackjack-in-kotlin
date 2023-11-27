@@ -144,6 +144,6 @@ open class Player(private var money: Int = 100) {
     }
 
     override fun toString(): String {
-        return "Player: $playerName, Bet: $bet, Money: $money, $hand"
+        return "Player: $playerName, Aposta: $bet, Dinheiro: $money, $hand"
     }
 }

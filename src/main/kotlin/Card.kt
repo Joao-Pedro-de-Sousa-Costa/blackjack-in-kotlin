@@ -6,7 +6,7 @@ class Card(private val suit: Suit, private val rank: Rank) {
     fun getRank() = rank
 
     override fun toString(): String {
-        return "[$rank of $suit] (${getValue()})"
+        return "$rank de $suit"
     }
 
     companion object {
