@@ -34,10 +34,12 @@ class Blackjack {
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
+    //Inicio
     init {
         writer.newLine()
 
         var name = ""
+        // Usa um loop do-while para garantir que o usuário forneça um nome não vazio
         do {
             print("Insira o seu nome: ")
             name = readLine() ?: ""
@@ -49,7 +51,7 @@ class Blackjack {
         human.setName(name)
         menu()
         writer.close()
-    }
+    } //Bloco de inicialização que, sera iniciado assim que o objeto é indexado.
 
     fun menu() {
         resetGame()
@@ -130,9 +132,12 @@ class Blackjack {
                 }
             }
         }
-    }
+    } //Gera o menu de opções...
 
+
+    //Modo Normal.
     private fun normalMode() {
+        // Adiciona informações sobre o jogo atual ao arquivo
         quantGames++
         saveGames()
         writer.newLine()
@@ -140,12 +145,15 @@ class Blackjack {
         writer.newLine()
         writer.append("Hora atual: ${LocalTime.now().format(timeFormatter)}; Data Atual: ${LocalDate.now().format(dateFormatter)}\n")
         writer.newLine()
+
+        // Enquanto o tamanho do deck for suficiente para começar uma nova partida
         while (deck.size >= (1 + machines.size) * 2) {
             var option = ""
             println(" ")
             match()
             ++quantMatchs
 
+            // Loop para obter uma resposta válida do usuário (continuar ou sair)
             while (option != "s" && option != "n") {
                 println("\nDeseja continuar jogando? \n" +
                         "[S] Continuar\n" +
@@ -157,7 +165,7 @@ class Blackjack {
                 "n" -> return printNormalResults()
             }
         }
-    }
+    } //Modo normal de jogo, sequencia de partidas.
 
     private fun match() {
         val allPlayers = listOf(human) + machines
@@ -188,9 +196,11 @@ class Blackjack {
             print("\nInsira o valor que deseja apostar: ")
             var valor = scanner.nextInt()
 
+            // Verifica se o jogador humano tem dinheiro suficiente para a aposta
             if (human.getMoney() != 0 && human.getMoney() >= valor) {
                 human.placeBet(valor)
 
+                // Todos os jogadores (incluindo máquinas) fazem suas apostas
                 machines.forEach { machine ->
                     machine.placeBet(human.getBet())
                 }
@@ -200,6 +210,7 @@ class Blackjack {
 
                 println("\nOPONENTES EM MESA\n")
 
+                // Distribui duas cartas para cada jogador na mesa
                 for (player in allPlayers) {
 
                     player.hand.dealCard(deck, playedCards)
@@ -207,6 +218,7 @@ class Blackjack {
                     println(player)
                 }
 
+                // Fase de decisão para cada jogador na mesa
                 for (player in allPlayers) {
                     println("\nTurno de: ${player.getName()}")
                     println("${player.hand}")
@@ -215,7 +227,7 @@ class Blackjack {
                         player.setMoney((player.getMoney() + generalBet) + 10)
                         return
                     }
-
+                    // Jogador toma sua decisão
                     player.makeDecision(deck, playedCards)
                     generalBet = allPlayers.sumOf { it.getBet() }
 
@@ -244,16 +256,19 @@ class Blackjack {
             quantMatchs--
             scanner.next() // Limpar o buffer do scanner
         }
-    }
+    } //Uma partida contendo o turno de cada jogador, modo normal.
 
     fun findWinner(players: List<Player>): Player? {
         return players
-                .filter { it.hand.getScore() < 21 }
+                .filter { it.hand.getScore() < 21 } //Para cada jogador se for 20 ou menos ele venceu.
                 .maxByOrNull { it.hand.getScore() }
 
-    }
+    } //Metodo que encontra o vencedor da partida.
 
+
+    //Modo em dupla.
     private fun pairMode() {
+        // Adiciona informações sobre o jogo atual ao arquivo.
         quantGames++
         saveGames()
         writer.newLine()
@@ -261,13 +276,13 @@ class Blackjack {
         writer.newLine()
         writer.append("Hora atual: ${LocalTime.now().format(timeFormatter)}; Data Atual: ${LocalDate.now().format(dateFormatter)}\n")
         writer.newLine()
-
+        // Enquanto o tamanho do deck for suficiente para começar uma nova partida
         while (deck.size >= (1 + machines.size) * 2) {
             var option = ""
             println(" ")
             pairMatch()
             ++quantMatchs
-
+            // Loop para obter uma resposta válida do usuário (continuar ou sair)
             while (option != "s" && option != "n") {
                 println("\nDeseja continuar jogando? \n" +
                         "[S] Continuar\n" +
@@ -276,13 +291,12 @@ class Blackjack {
             }
             when (option) {
                 "s" -> resetMatch()
-                "n" -> return printPodium(pairs)
+                "n" -> return printDoubleResults(pairs)
             }
         }
-    }
-
+    } //Modo de duplas.
     private fun createPairs(numPairs: Int) {
-
+        // Cria um par inicial com o jogador humano e uma máquina, adicionando a máquina à lista de máquinas
         val firstPair = Pair(human, CPUPlayer())
         machines.add(firstPair.player2 as CPUPlayer)
         firstPair.player2.setName("Maquina Aux")
@@ -297,15 +311,16 @@ class Blackjack {
             newMachine2.setName("Máquina$i B")
             machines.add(newMachine2)
 
+            // Cria um novo par de máquinas e o adiciona à lista de pares
             val newPair = Pair(newMachine1, newMachine2)
             pairs.add(newPair)
         }
-    }
-
+    } //Metodo que cria as duplas.
     private fun pairMatch() {
         println("Duplas: \n $pairs")
 
         val numPlayers = 1 + machines.size
+        // Verifica se o baralho tem cartas suficientes para uma partida
         if (deck.size < numPlayers * 2) {
             println("A quantidade de cartas no deck é insuficiente para uma partida.\nFIM DE JOGO.")
             println("Salvando resultados...")
@@ -320,7 +335,7 @@ class Blackjack {
             }
             when (option) {
                 "s" -> menu()
-                "n" -> return printPodium(pairs)
+                "n" -> return printDoubleResults(pairs)
             }
         }
         println("\nPartida $quantMatchs")
@@ -398,7 +413,7 @@ class Blackjack {
             quantMatchs--
             scanner.next() // Limpar o buffer do scanner
         }
-    }
+    } //Uma partida para as duplas.
 
     fun findPairWinning(pairList: List<Pair>): Pair? {
         return pairList
@@ -408,8 +423,10 @@ class Blackjack {
                             it.player2.hand.getScore() < 21
                 }
                 .maxByOrNull { it.getDoubleScore() }
-    }
+    } //Metodo que acha o vencedor no modo de duplas.
 
+
+    //Metodos de reset.
     private fun resetGame() {
         human.setMoney(Player().getMoney())
         human.hand = Hand()
@@ -417,15 +434,17 @@ class Blackjack {
         machines = mutableListOf()
         deck = Card.createDeck()
         playedCards = mutableListOf()
-    }
+    } // Metodo que reseta o jogo.
 
     private fun resetMatch() {
         human.hand = Hand()
         for (machine in machines) {
             machine.hand = Hand()
         }
-    }
+    } // Metodo que reseta as partidas.
 
+
+    //Metodo de prints
     fun printNormalResults() {
 
         val sortedResults = (listOf(human) + machines).sortedByDescending { it.getMoney() }
@@ -440,9 +459,9 @@ class Blackjack {
         }
         println("Resultados salvos com sucesso.")
 
-    }
+    } // Da um print na tela sobre o podium da modo normal.
 
-    fun printPodium(pairs: List<Pair>) {
+    fun printDoubleResults(pairs: List<Pair>) {
         val sortedPairs = pairs.sortedByDescending { it.money }
 
         writer.append("Podium:")
@@ -455,13 +474,14 @@ class Blackjack {
             writer.append("${index + 1}. $pairName - Dinheiro: $money")
         }
         println("Resultados salvos com sucesso.")
-    }
+    } // Da um print na tela sobre o podium da modo normal.
 
 
+    //Metodo de salvamentos
     fun saveGames() {
         val arquivo = File("config.txt")
         arquivo.writeText(quantGames.toString())
-    }
+    } // Salva a quantidade de partidas feitas em config.
 
     fun loadGames(): Int {
         val arquivo = File("config.txt")
@@ -470,5 +490,6 @@ class Blackjack {
         } else {
             0
         }
-    }
+    } // Carrega Config.
+
 }
