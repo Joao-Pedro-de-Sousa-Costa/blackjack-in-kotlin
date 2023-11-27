@@ -1,16 +1,14 @@
 package src.main.kotlin
 
-data class Pair<T, U>(val jogador1: Player, val jogador2: Player) {
+data class Pair(val player1: Player, val player2: Player) {
 
-    var name: String = jogador1.getName() + "'s"
-    var money: Int = jogador1.getMoney() + jogador2.getMoney()
+    var name: String = player1.getName() + "'s"
+    var money: Int = player1.getMoney() + player2.getMoney()
     var doubleBet: Int = 0
 
-
     fun getDoubleScore(): Int {
-        return jogador1.hand.getScore() + jogador1.hand.getScore()
+        return player1.hand.getScore() + player1.hand.getScore()
     }
-
     fun placeBet(betAmount: Int): Boolean { // Verificar se pode apostar
         if (betAmount > 0 && betAmount <= money) {
             money -= betAmount
@@ -19,8 +17,7 @@ data class Pair<T, U>(val jogador1: Player, val jogador2: Player) {
         }
         return false
     }
-
     override fun toString(): String {
-        return "\nJogadores: ${jogador1.getName()} & ${jogador2.getName()} - Aposta: ${doubleBet}, Score: ${getDoubleScore()}, Dinheiro: ${money}"
+        return "\nJogadores: ${player1.getName()} & ${player2.getName()} - Aposta: ${doubleBet}, Score: ${getDoubleScore()}, Dinheiro: ${money}"
     }
 }

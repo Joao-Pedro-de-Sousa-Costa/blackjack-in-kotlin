@@ -15,11 +15,9 @@ class Blackjack {
     // Jogadores
     private var human = Player()
     private var machines = mutableListOf<CPUPlayer>()
-    private val gameResults = mutableListOf<Player>()
 
-    // Pares (se estiver usando)
-    private val pair = mutableListOf<Pair<Any?, Any?>>()
-    private val pairGameResults = mutableListOf<Pair<Any?, Any?>>()
+    // Duplas (se estiver usando)
+    private var pairs = mutableListOf<Pair>()
 
     // Baralho
     private var deck = Card.createDeck()
@@ -30,14 +28,14 @@ class Blackjack {
     private var quantGames = loadGames()
 
     // Escritor para resultados
-    val escritor = BufferedWriter(FileWriter("Resultados.txt", true))
+    val writer = BufferedWriter(FileWriter("Resultados.txt", true))
 
     // Formato de hora e data
-    val formatoHora = DateTimeFormatter.ofPattern("HH:mm:ss")
-    val formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+    val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     init {
-        escritor.newLine()
+        writer.newLine()
 
         var name = ""
         do {
@@ -50,8 +48,7 @@ class Blackjack {
 
         human.setName(name)
         menu()
-        escritor.close()
-
+        writer.close()
     }
 
     fun menu() {
@@ -73,7 +70,7 @@ class Blackjack {
                     return
                 }
             }
-        } catch (e: java.util.InputMismatchException) {
+        } catch (e: InputMismatchException) {
             println("Entrada inválida. Por favor, insira um número.")
             scanner.next() // Limpar a entrada incorreta
             menu()
@@ -101,7 +98,7 @@ class Blackjack {
                             println("Comando inválido, tente novamente.")
                         }
                     }
-                } catch (e: java.util.InputMismatchException) {
+                } catch (e: InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
                     scanner.next()
                 }
@@ -127,21 +124,22 @@ class Blackjack {
                     }
                     pairMode()
                     break
-                } catch (e: java.util.InputMismatchException) {
+                } catch (e: InputMismatchException) {
                     println("Entrada inválida. Por favor, insira um número.")
                     scanner.next()
                 }
             }
         }
     }
+
     private fun normalMode() {
         quantGames++
         saveGames()
-        escritor.newLine()
-        escritor.append("${quantGames}. ---JOGO--- .${quantGames}")
-        escritor.newLine()
-        escritor.append("Hora atual: ${LocalTime.now().format(formatoHora)}; Data Atual: ${LocalDate.now().format(formatoData)}\n")
-        escritor.newLine()
+        writer.newLine()
+        writer.append("${quantGames}. ---JOGO--- .${quantGames}")
+        writer.newLine()
+        writer.append("Hora atual: ${LocalTime.now().format(timeFormatter)}; Data Atual: ${LocalDate.now().format(dateFormatter)}\n")
+        writer.newLine()
         while (deck.size >= (1 + machines.size) * 2) {
             var option = ""
             println(" ")
@@ -156,10 +154,11 @@ class Blackjack {
             }
             when (option) {
                 "s" -> resetMatch()
-                "n" -> return printResults(listOf(human)+machines)
+                "n" -> return printNormalResults()
             }
         }
     }
+
     private fun match() {
         val allPlayers = listOf(human) + machines
 
@@ -178,7 +177,7 @@ class Blackjack {
             }
             when (option) {
                 "s" -> menu()
-                "n" -> return printResults(allPlayers)
+                "n" -> return printNormalResults()
             }
         }
 
@@ -246,20 +245,22 @@ class Blackjack {
             scanner.next() // Limpar o buffer do scanner
         }
     }
-    fun findWinner(jogadores: List<Player>): Player? {
-        return jogadores
-            .filter { it.hand.getScore() < 21 }
-            .maxByOrNull { it.hand.getScore() }
+
+    fun findWinner(players: List<Player>): Player? {
+        return players
+                .filter { it.hand.getScore() < 21 }
+                .maxByOrNull { it.hand.getScore() }
 
     }
+
     private fun pairMode() {
         quantGames++
         saveGames()
-        escritor.newLine()
-        escritor.append("${quantGames}. ---JOGO--- .${quantGames}")
-        escritor.newLine()
-        escritor.append("Hora atual: ${LocalTime.now().format(formatoHora)}; Data Atual: ${LocalDate.now().format(formatoData)}\n")
-        escritor.newLine()
+        writer.newLine()
+        writer.append("${quantGames}. ---JOGO--- .${quantGames}")
+        writer.newLine()
+        writer.append("Hora atual: ${LocalTime.now().format(timeFormatter)}; Data Atual: ${LocalDate.now().format(dateFormatter)}\n")
+        writer.newLine()
 
         while (deck.size >= (1 + machines.size) * 2) {
             var option = ""
@@ -275,18 +276,17 @@ class Blackjack {
             }
             when (option) {
                 "s" -> resetMatch()
-                "n" -> return
+                "n" -> return printPodium(pairs)
             }
         }
     }
-    private fun createPairs(numPairs: Int) {
-        pair.clear()
-        machines.clear()
 
-        val firstPair = Pair<Any?,Any?>(human, CPUPlayer())
-        machines.add(firstPair.jogador2 as CPUPlayer)
-        firstPair.jogador2.setName("Maquina Aux")
-        pair.add(firstPair)
+    private fun createPairs(numPairs: Int) {
+
+        val firstPair = Pair(human, CPUPlayer())
+        machines.add(firstPair.player2 as CPUPlayer)
+        firstPair.player2.setName("Maquina Aux")
+        pairs.add(firstPair)
 
         for (i in 1..numPairs / 2) {
             val newMachine1 = CPUPlayer()
@@ -297,17 +297,18 @@ class Blackjack {
             newMachine2.setName("Máquina$i B")
             machines.add(newMachine2)
 
-            val newPair = Pair<Any?,Any?>(newMachine1, newMachine2)
-            pair.add(newPair)
+            val newPair = Pair(newMachine1, newMachine2)
+            pairs.add(newPair)
         }
     }
+
     private fun pairMatch() {
-        println("Duplas: \n $pair")
+        println("Duplas: \n $pairs")
 
         val numPlayers = 1 + machines.size
         if (deck.size < numPlayers * 2) {
             println("A quantidade de cartas no deck é insuficiente para uma partida.\nFIM DE JOGO.")
-            println("Salvando resultados...") // Fazer o método que salva os resultados
+            println("Salvando resultados...")
 
             var option = ""
 
@@ -319,7 +320,7 @@ class Blackjack {
             }
             when (option) {
                 "s" -> menu()
-                "n" -> return printResults(pair)
+                "n" -> return printPodium(pairs)
             }
         }
         println("\nPartida $quantMatchs")
@@ -331,56 +332,56 @@ class Blackjack {
             if (human.getMoney() != 0 && human.getMoney() >= valor) {
                 human.placeBet(valor)
 
-                for (dupla in pair) {
-                    dupla.placeBet(valor)
+                for (pair in pairs) {
+                    pair.placeBet(valor)
                 }
 
-                var generalBet = pair.sumOf { it.doubleBet }
+                var generalBet = pairs.sumOf { it.doubleBet }
                 println("Valor total da mesa: $generalBet")
 
                 println("\nOPONENTES EM MESA\n")
 
-                for (dupla in pair) {
-                    dupla.jogador1.hand.dealCard(deck, playedCards)
-                    dupla.jogador1.hand.dealCard(deck, playedCards)
-                    dupla.jogador2.hand.dealCard(deck, playedCards)
-                    dupla.jogador2.hand.dealCard(deck, playedCards)
+                for (pair in pairs) {
+                    pair.player1.hand.dealCard(deck, playedCards)
+                    pair.player1.hand.dealCard(deck, playedCards)
+                    pair.player2.hand.dealCard(deck, playedCards)
+                    pair.player2.hand.dealCard(deck, playedCards)
 
                 }
-                println(pair)
+                println(pairs)
 
-                for (dupla in pair) {
-                    println("\nTurno da dupla: ${dupla.name}")
+                for (pair in pairs) {
+                    println("\nTurno da dupla: ${pair.name}")
 
-                    for (jogador in listOf(dupla.jogador1, dupla.jogador2)) {
-                        println("\nTurno de ${jogador.getName()}")
-                        println("Mão atual: ${jogador.hand}")
+                    for (player in listOf(pair.player1, pair.player2)) {
+                        println("\nTurno de ${player.getName()}")
+                        println("Mão atual: ${player.hand}")
 
-                        if (dupla.getDoubleScore() == 42) {
-                            println("\nA partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
-                            dupla.money += (generalBet + 20)
-                            println(dupla)
+                        if (pair.getDoubleScore() == 42) {
+                            println("\nA partida acabou, o vencedor é o $pair.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
+                            pair.money += (generalBet + 20)
+                            println(pair)
                             return
                         }
 
-                        jogador.makeDecision(deck, playedCards)
-                        generalBet = pair.sumOf { it.doubleBet }
+                        player.makeDecision(deck, playedCards)
+                        generalBet = pairs.sumOf { it.doubleBet }
 
-                        if (dupla.getDoubleScore() == 42) {
-                            println("\nA partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
-                            dupla.money += (generalBet + 20)
-                            println(dupla)
+                        if (pair.getDoubleScore() == 42) {
+                            println("\nA partida acabou, o vencedor é o $pair.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
+                            pair.money += (generalBet + 20)
+                            println(pair)
                             return
                         }
                     }
                 }
 
-                val winners = findPairWinning(pair)
+                val winners = findPairWinning(pairs)
                 if (winners != null) {
                     //println(generalBet)
                     //println(winners)
                     println(
-                        "\nA partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
+                            "\nA partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
                     )
                     winners.money += generalBet
                     //println(generalBet)
@@ -398,22 +399,26 @@ class Blackjack {
             scanner.next() // Limpar o buffer do scanner
         }
     }
-    fun findPairWinning(duplas: List<Pair<Any?, Any?>>): Pair<Any?, Any?>? {
-        return duplas
+
+    fun findPairWinning(pairList: List<Pair>): Pair? {
+        return pairList
                 .filter {
                     it.getDoubleScore() < 42 &&
-                            it.jogador1.hand.getScore() < 21 &&
-                            it.jogador2.hand.getScore() < 21
+                            it.player1.hand.getScore() < 21 &&
+                            it.player2.hand.getScore() < 21
                 }
                 .maxByOrNull { it.getDoubleScore() }
     }
+
     private fun resetGame() {
         human.setMoney(Player().getMoney())
         human.hand = Hand()
+        pairs = mutableListOf()
         machines = mutableListOf()
         deck = Card.createDeck()
         playedCards = mutableListOf()
     }
+
     private fun resetMatch() {
         human.hand = Hand()
         for (machine in machines) {
@@ -421,40 +426,43 @@ class Blackjack {
         }
     }
 
-    fun printResults(users: List<Any>) {
-        val sortedResults = users.sortedByDescending {
-            when (it) {
-                is Player -> it.getMoney()
-                is Pair<*, *> -> (it.jogador1 as Player).getMoney() + (it.jogador2 as Player).getMoney()
-                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
-            }
-        }
+    fun printNormalResults() {
 
+        val sortedResults = (listOf(human) + machines).sortedByDescending { it.getMoney() }
+        writer.append("Podium:")
         println("Podium:")
-        escritor.append("Podium:")
-        sortedResults.forEachIndexed { index, user ->
-            val playerName = when (user) {
-                is Player -> user.getName() ?: "Desconhecido"
-                is Pair<*, *> -> (user.jogador1 as Player).getName() + " e " + (user.jogador2 as Player).getName()
-                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
-            }
-            val money = when (user) {
-                is Player -> user.getMoney()
-                is Pair<*, *> -> (user.jogador1 as Player).getMoney() + (user.jogador2 as Player).getMoney()
-                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
-            }
-
+        sortedResults.forEachIndexed { index, player ->
+            val playerName = player.getName() ?: "Desconhecido"
+            val money = player.getMoney()
             println("${index + 1}. $playerName - Dinheiro: $money")
-            escritor.newLine()
-            escritor.append("${index + 1}. $playerName - Dinheiro: $money")
+            writer.newLine()
+            writer.append("${index + 1}. $playerName - Dinheiro: $money")
         }
+        println("Resultados salvos com sucesso.")
 
-        println("Resultados Salvos com sucesso!")
     }
+
+    fun printPodium(pairs: List<Pair>) {
+        val sortedPairs = pairs.sortedByDescending { it.money }
+
+        writer.append("Podium:")
+        println("Podium:")
+        sortedPairs.forEachIndexed { index, pair ->
+            val pairName = pair.name ?: "Desconhecido"
+            val money = pair.money
+            println("${index + 1}. $pairName - Dinheiro: $money")
+            writer.newLine()
+            writer.append("${index + 1}. $pairName - Dinheiro: $money")
+        }
+        println("Resultados salvos com sucesso.")
+    }
+
+
     fun saveGames() {
         val arquivo = File("config.txt")
         arquivo.writeText(quantGames.toString())
     }
+
     fun loadGames(): Int {
         val arquivo = File("config.txt")
         return if (arquivo.exists()) {

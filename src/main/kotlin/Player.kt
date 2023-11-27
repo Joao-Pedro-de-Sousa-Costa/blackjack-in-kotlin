@@ -7,44 +7,27 @@ open class Player(private var money: Int = 100) {
 
     var hand = Hand()
     private var playerName: String = ""
-    private var gameDateTime: Date? = null
     private var bet: Int = 0
-    private var wins: Int = 0
     private var standing: Boolean = false
 
     fun getMoney(): Int {
         return money
     }
-
     fun setMoney(Pmoney: Int) {
         money = Pmoney
     }
-
     fun setName(name: String) {
         playerName = name
     }
-
     fun getName(): String {
         return playerName
     }
-
     fun getBet(): Int {
         return bet
     }
-
-
     fun getStand(): Boolean {
         return standing
     }
-
-    fun setGameDateTime(dateTime: Date) {
-        gameDateTime = dateTime
-    }
-
-    fun getGameDateTime(): Date? {
-        return gameDateTime
-    }
-
     fun placeBet(betAmount: Int): Boolean { // Verificar se pode apostar
         if (betAmount > 0 && betAmount <= money) {
             money -= betAmount
@@ -72,7 +55,6 @@ open class Player(private var money: Int = 100) {
             standing = true
         }
     }
-
     fun doubleDown(deck: MutableList<Card>, playedCards: MutableList<Card>): Int {
         println("\nO jogador ${getName()} deseja dobrar a aposta.")
         val originalBet = bet
@@ -94,7 +76,6 @@ open class Player(private var money: Int = 100) {
 
         return originalBet
     }
-
     fun stand(): Boolean {
         println("\nO jogador ${getName()} decidiu não pegar mais cartas")
         standing = true

@@ -24,7 +24,6 @@ class CPUPlayer : Player() {
             cardCounter.resetCount()
         }
     }
-
     private fun makeDecisionBasedOnScoreAndCount(deck: MutableList<Card>, playedCards: MutableList<Card>, currentCount: Int): Boolean {
         if (currentCount < 0 && hand.getScore() < 17) {
             hit(deck, playedCards)
@@ -37,6 +36,4 @@ class CPUPlayer : Player() {
             return false
         }
     }
-
 }
-
