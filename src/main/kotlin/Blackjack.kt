@@ -18,8 +18,8 @@ class Blackjack {
     private val gameResults = mutableListOf<Player>()
 
     // Pares (se estiver usando)
-    private val pair = mutableListOf<Pair>()
-    private val pairGameResults = mutableListOf<Pair>()
+    private val pair = mutableListOf<Pair<Any?, Any?>>()
+    private val pairGameResults = mutableListOf<Pair<Any?, Any?>>()
 
     // Baralho
     private var deck = Card.createDeck()
@@ -103,7 +103,7 @@ class Blackjack {
                         in setOf(1, 2, 3) -> {
                             for (i in 1..opponentsChoice) {
                                 val newMachine = CPUPlayer()
-                                newMachine.setName("Oponente$i")
+                                newMachine.setName("Maquina-$i")
                                 machines.add(newMachine)
                             }
                             break
@@ -151,8 +151,9 @@ class Blackjack {
         pair.clear()
         machines.clear()
 
-        val firstPair = Pair(human, CPUPlayer())
+        val firstPair = Pair<Any?,Any?>(human, CPUPlayer())
         machines.add(firstPair.jogador2 as CPUPlayer)
+        firstPair.jogador2.setName("Maquina-aux")
         pair.add(firstPair)
 
         for (i in 1..numPairs / 2) {
@@ -164,7 +165,7 @@ class Blackjack {
             newMachine2.setName("Máquina$i-B")
             machines.add(newMachine2)
 
-            val newPair = Pair(newMachine1, newMachine2)
+            val newPair = Pair<Any?,Any?>(newMachine1, newMachine2)
             pair.add(newPair)
         }
     }
@@ -190,7 +191,7 @@ class Blackjack {
             }
             when (option) {
                 "s" -> resetMatch()
-                "n" -> return printResults()
+                "n" -> return printResults(listOf(human)+machines)
             }
         }
     }
@@ -239,7 +240,7 @@ class Blackjack {
             }
             when (option) {
                 "s" -> menu()
-                "n" -> return printResults()
+                "n" -> return printResults(allPlayers)
             }
         }
 
@@ -330,68 +331,82 @@ class Blackjack {
             }
             when (option) {
                 "s" -> menu()
-                "n" -> return printResults()
+                "n" -> return printResults(pair)
             }
         }
-
         println("Partida $quantMatchs")
         val scanner = Scanner(System.`in`)
+        try {
+            print("\nInsira o valor que deseja apostar: ")
+            var valor = scanner.nextInt()
 
-        print("Insira o valor que deseja apostar: ")
-        val apostaJogador1 = scanner.nextInt()
+            if (human.getMoney() != 0 && human.getMoney() >= valor) {
+                human.placeBet(valor)
 
-        for (dupla in pair) {
-            dupla.jogador1.placeBet(apostaJogador1)
-            dupla.jogador2.placeBet(apostaJogador1)
-        }
-
-        var generalBet = pair.sumOf { it.getApostaTotal() }
-        println("Aposta total: $generalBet")
-
-        for (dupla in pair) {
-            dupla.jogador1.hand.dealCard(deck, playedCards)
-            dupla.jogador1.hand.dealCard(deck, playedCards)
-            dupla.jogador2.hand.dealCard(deck, playedCards)
-            dupla.jogador2.hand.dealCard(deck, playedCards)
-        }
-
-        for (dupla in pair) {
-            println("Turno da dupla: ${dupla.name}")
-
-            for (jogador in listOf(dupla.jogador1, dupla.jogador2)) {
-                println("Turno do jogador ${jogador.getName()}")
-
-                if (dupla.getDoubleScore() == 42) {
-                    println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20% por ser um Blackjack)")
-                    dupla.money += generalBet
-                    println(dupla)
-                    return
+                for (dupla in pair) {
+                    dupla.placeBet(valor)
                 }
 
-                jogador.makeDecision(deck, playedCards)
-                generalBet = pair.sumOf { it.getApostaTotal() }
+                var generalBet = pair.sumOf { it.doubleBet }
+                println("Valor total da mesa: $generalBet")
 
-                if (dupla.getDoubleScore() == 42) {
-                    println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20% por ser um Double Blackjack)")
-                    dupla.money += generalBet
-                    println(dupla)
-                    return
+                println("\nOPONENTES EM MESA\n")
+
+                for (dupla in pair) {
+                    dupla.jogador1.hand.dealCard(deck, playedCards)
+                    dupla.jogador1.hand.dealCard(deck, playedCards)
+                    dupla.jogador2.hand.dealCard(deck, playedCards)
+                    dupla.jogador2.hand.dealCard(deck, playedCards)
+
                 }
+                println(pair)
+
+                for (dupla in pair) {
+                    println("Turno da dupla: ${dupla.name}")
+
+                    for (jogador in listOf(dupla.jogador1, dupla.jogador2)) {
+                        println("Turno do jogador ${jogador.getName()}")
+                        println(jogador.hand)
+
+                        if (dupla.getDoubleScore() == 42) {
+                            println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
+                            dupla.money += (generalBet + 20)
+                            println(dupla)
+                            return
+                        }
+
+                        jogador.makeDecision(deck, playedCards)
+                        generalBet = pair.sumOf { it.doubleBet }
+
+                        if (dupla.getDoubleScore() == 42) {
+                            println("A partida acabou, o vencedor é o $dupla.\nValor recebido: $generalBet (+20 por ser um Double Blackjack)")
+                            dupla.money += (generalBet + 20)
+                            println(dupla)
+                            return
+                        }
+                    }
+                }
+
+                val winners = findWinningDouble(pair)
+                if (winners != null) {
+                    println(generalBet)
+                    println(winners)
+                    println(
+                            "A partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
+                    )
+                    winners.money += generalBet
+                    println(generalBet)
+                    println(winners)
+                } else {
+                    println("A partida acabou, nenhum vencedor encontrado.")
+                }
+            } else {
+                println("Aposta inválida. Certifique-se de que você tem dinheiro suficiente.")
             }
-        }
-
-        val winners = findWinningDouble(pair)
-        if (winners != null) {
-            println(generalBet)
-            println(winners)
-            println(
-                    "A partida acabou, o vencedor é o ${winners.name} com score ${winners.getDoubleScore()}\nValor recebido: $generalBet"
-            )
-            winners.money += generalBet
-            println(generalBet)
-            println(winners)
-        } else {
-            println("A partida acabou, nenhum vencedor encontrado.")
+        } catch (e: InputMismatchException) {
+            println("Entrada inválida. Insira um valor numérico.")
+            quantMatchs--
+            scanner.next() // Limpar o buffer do scanner
         }
     }
     fun findWinner(jogadores: List<Player>): Player? {
@@ -400,24 +415,44 @@ class Blackjack {
                 .maxByOrNull { it.hand.getScore() }
 
     }
-    fun findWinningDouble(duplas: List<Pair>): Pair? {
+    fun findWinningDouble(duplas: List<Pair<Any?, Any?>>): Pair<Any?, Any?>? {
         return duplas
-                .filter { it.getDoubleScore() < 42 }
+                .filter {
+                    it.getDoubleScore() < 42 &&
+                            it.jogador1.hand.getScore() < 21 &&
+                            it.jogador2.hand.getScore() < 21
+                }
                 .maxByOrNull { it.getDoubleScore() }
     }
-    fun printResults() {
 
-        val sortedResults = (listOf(human) + machines).sortedByDescending { it.getMoney() }
+    fun printResults(users: List<Any>) {
+        val sortedResults = users.sortedByDescending {
+            when (it) {
+                is Player -> it.getMoney()
+                is Pair<*, *> -> (it.jogador1 as Player).getMoney() + (it.jogador2 as Player).getMoney()
+                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
+            }
+        }
 
         println("Podium:")
         escritor.append("Podium:")
-        sortedResults.forEachIndexed { index, player ->
-            val playerName = player.getName() ?: "Desconhecido"
-            val money = player.getMoney()
+        sortedResults.forEachIndexed { index, user ->
+            val playerName = when (user) {
+                is Player -> user.getName() ?: "Desconhecido"
+                is Pair<*, *> -> (user.jogador1 as Player).getName() + " e " + (user.jogador2 as Player).getName()
+                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
+            }
+            val money = when (user) {
+                is Player -> user.getMoney()
+                is Pair<*, *> -> (user.jogador1 as Player).getMoney() + (user.jogador2 as Player).getMoney()
+                else -> throw IllegalArgumentException("Tipo de usuário não suportado")
+            }
+
             println("${index + 1}. $playerName - Dinheiro: $money")
             escritor.newLine()
             escritor.append("${index + 1}. $playerName - Dinheiro: $money")
         }
+
         println("Resultados Salvos com sucesso!")
     }
     fun salvarQuantidadeDeJogos() {
