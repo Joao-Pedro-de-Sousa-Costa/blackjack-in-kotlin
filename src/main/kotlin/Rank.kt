@@ -1,19 +1,19 @@
 package src.main.kotlin
 
 enum class Rank(val rankName: String, val rankValue: Int) {
-    ACE("Ace", 11),
-    TWO("Two", 2),
-    THREE("Three", 3),
-    FOUR("Four", 4),
-    FIVE("Five", 5),
-    SIX("Six", 6),
-    SEVEN("Seven", 7),
-    EIGHT("Eight", 8),
-    NINE("Nine", 9),
-    TEN("Ten", 10),
-    JACK("Jack", 10),
-    QUEEN("Queen", 10),
-    KING("King", 10);
+    ACE("A", 11),
+    TWO("Dois", 2),
+    THREE("Três", 3),
+    FOUR("Quatro", 4),
+    FIVE("Cinco", 5),
+    SIX("Seis", 6),
+    SEVEN("Sete", 7),
+    EIGHT("Oito", 8),
+    NINE("Nove", 9),
+    TEN("Dez", 10),
+    JACK("Valete", 10),
+    QUEEN("Rainha", 10),
+    KING("Rei", 10);
 
     override fun toString(): String {
         return rankName

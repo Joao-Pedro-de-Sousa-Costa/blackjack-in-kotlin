@@ -4,11 +4,9 @@ class Card(private val suit: Suit, private val rank: Rank) {
     fun getValue() = rank.rankValue
     fun getSuit() = suit
     fun getRank() = rank
-
     override fun toString(): String {
-        return "[$rank of $suit] (${getValue()})"
+        return "$rank de $suit"
     }
-
     companion object {
         fun createDeck(): MutableList<Card> {
             val deck = mutableListOf<Card>()
