@@ -21,7 +21,7 @@ This project, developed in Kotlin, aims to implement the classic card game "Blac
 
 - Anniely Medeiros: [@annielymariah](https://github.com/annielymariah)
 - Gabriel Soares: [@Gaaaybe](https://github.com/Gaaaybe)
-- João Costa: [@TheAkarui](https://github.com/TheAkarui)
+- João Costa: [@TheAkarui](https://github.com/jotapesc)
 
 ## Subject ♣️
 
